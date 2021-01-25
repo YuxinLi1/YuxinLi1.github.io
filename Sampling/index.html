@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Noto Serif SC:300,300italic,400,400italic,700,700italic|Roboto Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yuxinli1.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="对于传统的静态有限量数据，有许多种抽样的方法，如简单随机抽样等. 但是对于现在的大数据流量，数据往往是以流的形式源源不断的到来，此时不仅仅数据量会很大，而且我们也无法确定数据量的大小，因此对于传统的抽样方法，并不合适我们目前的需求.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sampling">
+<meta property="og:url" content="https://yuxinli1.github.io/Sampling/index.html">
+<meta property="og:site_name" content="Yuxin&#39;s blog">
+<meta property="og:description" content="对于传统的静态有限量数据，有许多种抽样的方法，如简单随机抽样等. 但是对于现在的大数据流量，数据往往是以流的形式源源不断的到来，此时不仅仅数据量会很大，而且我们也无法确定数据量的大小，因此对于传统的抽样方法，并不合适我们目前的需求.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yuxinli1.github.io/Sampling/Systematic%20Sampling%201.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sampling/Systematic%20Sampling%202.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sampling/Reservoir%20Sampling%201.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sampling/Reservoir%20Sampling%202.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sampling/Reservoir%20Sampling%203.png">
+<meta property="article:published_time" content="2021-01-25T10:48:00.000Z">
+<meta property="article:modified_time" content="2021-01-25T11:23:39.734Z">
+<meta property="article:author" content="Yuxin Li">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="sampling">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yuxinli1.github.io/Sampling/Systematic%20Sampling%201.png">
+
+<link rel="canonical" href="https://yuxinli1.github.io/Sampling/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Sampling | Yuxin's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Yuxin's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Sampling/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Sampling
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:48:00 / 修改时间：19:23:39" itemprop="dateCreated datePublished" datetime="2021-01-25T18:48:00+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>对于传统的静态有限量数据，有许多种抽样的方法，如简单随机抽样等. 但是对于现在的大数据流量，数据往往是以流的形式源源不断的到来，此时不仅仅数据量会很大，而且我们也无法确定数据量的大小，因此对于传统的抽样方法，并不合适我们目前的需求.</p>
+<a id="more"></a>
+<h1 id="基本概念">基本概念</h1>
+<h2 id="通常使用的抽样方法">通常使用的抽样方法</h2>
+<ul>
+<li><p>简单随机抽样 Sample Random Sampling</p></li>
+<li><p>系统抽样 Systematic Sampling</p></li>
+<li><p>分层抽样 Stratified Sampling</p></li>
+<li><p>水库抽样 Reservoir Sampling</p></li>
+<li><p>整群抽样 Cluster Sampling</p></li>
+<li><p>多阶段抽样 Multi-stage Sampling</p></li>
+</ul>
+<h2 id="与抽样相关的概念">与抽样相关的概念</h2>
+<ul>
+<li>总体</li>
+<li>个体</li>
+<li>总体容量</li>
+<li>有限总体/无限总体</li>
+<li>样本</li>
+<li>样本容量</li>
+</ul>
+<h2 id="抽样的特点">抽样的特点</h2>
+<ul>
+<li>总体中被抽中部分是依据随机性原则的，因此样本能够反应总体的部分特征</li>
+<li>抽样是为了通过目的反应总体，因抽样产生的误差可以根据抽样原理测定并控制在一定范围内，使得样本能够反应总体的特征</li>
+</ul>
+<h2 id="抽样的应用场景">抽样的应用场景</h2>
+<ul>
+<li>总体容量大</li>
+<li>调查过程具有破坏性</li>
+<li>调查修正 — 未验证已有调查结果的可靠性和正确性，可以根据样本推断总体情况从而实现对之前调查结果正确性的验证，并进一步实现调查结果的修正</li>
+</ul>
+<h1 id="简单随机抽样-sample-random-sampling">简单随机抽样 Sample Random Sampling</h1>
+<p><strong>定义</strong></p>
+<p>假设总体中共有 N 个个体，X<sub>i</sub>是一个随机变量，令 <span class="math display">\[
+\begin{align*}
+X_i = 
+\left\{
+\begin{array}{**lr**}
+1, &amp; \text{第i个单元被选中} \\
+0, &amp; \text{otherwise.}
+\end{array}
+\right.
+\end{align*}
+\]</span> 有 <span class="math display">\[
+P(X_1 = 1) = \dfrac{1}{N}
+\]</span> 简单随机抽样是一种等概率抽样方法，可以分为</p>
+<ul>
+<li>有放回(with replacement)抽样</li>
+<li>无放回(without replacement)抽样</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ol type="1">
+<li>对于每一个个体都要判断是否被选中，代价太大</li>
+<li>对于流数据或者无法事前确定总体容量的数据，不能使用简单随机抽样，因为不知道 N 有多大</li>
+</ol>
+<h1 id="系统抽样-systematic-sampling">系统抽样 Systematic Sampling</h1>
+<p>系统抽样也称为机械抽样，它是把总体中的个体按照某种顺序排列，在规定的范围内随机选取起始个体，然后按照一定的规则依次确定其它样本个体的抽样方法.</p>
+<ul>
+<li>直线等距抽样 Linear Systematic Sampling</li>
+<li>圆形等距抽样 Circular Systematic Sampling</li>
+</ul>
+<h2 id="直线等距抽样-linear-systematic-sampling">直线等距抽样 Linear Systematic Sampling</h2>
+<p><img src="Systematic Sampling 1.png" style="zoom:80%;float: middle;" /></p>
+<p><strong>目的</strong>：从 N 个总体中抽取 n 个样本</p>
+<p><strong>过程</strong>：不是直接从总体中随机抽取 n 个样本，而是选定一个<strong>起始个体</strong>，然后依据<strong>抽样间距</strong>进行选取</p>
+<ul>
+<li>计算抽样间距 <span class="math inline">\(k = \frac{N}{n}\)</span>，取最为接近的整数作为抽样间距 k</li>
+<li>从第1到第k个样本之间随机选取一个起始个体</li>
+<li>从起始个体开始依次增加 k 选取下一个样本个体</li>
+</ul>
+<p><strong>存在的问题</strong></p>
+<p>    如果 N 不正好是 n 的倍数，那么将不再是等概率抽样，此时可以使用圆形等距抽样.</p>
+<h2 id="圆形等距抽样-circular-systematic-sampling">圆形等距抽样 Circular Systematic Sampling</h2>
+<p><img src="Systematic Sampling 2.png" style="zoom:100%;float: middle;" /></p>
+<p><strong>过程</strong></p>
+<ul>
+<li>定义抽样间距 k 为最接近 <span class="math inline">\(\frac{N}{n}\)</span> 的整数</li>
+<li>在总体 N 中随机选取一个个体作为起始个体</li>
+<li>从起始个体开始，依次加 k 选择下一个样本个体，直到选够 n 个</li>
+</ul>
+<h2 id="优缺点">优缺点</h2>
+<p><strong>优点</strong></p>
+<ul>
+<li><p>操作方便，比简单随机抽样更为简单、时间和代价也更少</p></li>
+<li><p>抽出的样本在调查总体中分布比较均匀，具有较高代表性</p></li>
+<li><p>当对总体结构有一定了解时，利用已有信息对总体进行排队后在抽样，可以提高抽样效率</p></li>
+<li><p>有潜在分层功能. 系统抽样将总体分成均衡的几部分，在按事先确定的规则从各部分中抽取个体，可以看作是一种特殊的分层抽样</p></li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>需要将总体全部加载到内存中</li>
+<li>一个坏排列可能会使最终抽取的样本偏差很大</li>
+<li>抽样误差计算较为复杂</li>
+<li>如果调查总体具有某种周期性变化，会影响抽样的精度和代表性. 比如调查一个商店每月盈利情况，选择k=12，假设起始月份为1月份，那么将会抽出所有的1月份，不能真实的代表整体情况</li>
+</ul>
+<h1 id="分层抽样-stratified-sampling">分层抽样 Stratified Sampling</h1>
+<h2 id="过程">过程</h2>
+<ol type="1">
+<li>计算样本容量与总体容量之比</li>
+<li>将总体按照某种特征分成互不重叠的层，按比例确定各层要抽取的个体数（如果各层都不是整数，应调整样本容量，随机剔除部分个体）</li>
+<li>用简单随机抽样或者系统抽样在各层（不同的层可以采用不同的抽样算法以提高精度）抽取相应数量的个体</li>
+<li>将各层抽取的样本个体合在一起即为所抽取的样本</li>
+</ol>
+<h2 id="怎样分层">怎样分层</h2>
+<ol type="1">
+<li>选择某种特征作为分层依据（比如位置、度数等）
+<ul>
+<li>层内均匀，层与层之间非均匀</li>
+<li>与研究的变量高度相关</li>
+</ul></li>
+<li>分层的数量
+<ul>
+<li>取决与分层信息的多少：信息越少，分层越少</li>
+<li>为计算采样误差，每层至少要包括两个采样单元</li>
+</ul></li>
+<li>样本量分配方法</li>
+</ol>
+<h2 id="样本量分配方法">样本量分配方法</h2>
+<ol type="1">
+<li><p><strong>等额分配</strong>：每一层的样本量为 <span class="math display">\[
+ n_i = \dfrac{n}{K}
+ \]</span> 实施方便、便于管理. 各层工作量基本一致，可在相同时间内完成.</p></li>
+<li><p><strong>按比例分配</strong>：依据总体中各层个体数量 N<sub>i</sub> 所占的比例进行分配 <span class="math display">\[
+ n_i = n \times \dfrac{N_i}{N}
+ \]</span> 当关于各层个体数量N<sub>i</sub>已知时常采用该方法</p></li>
+<li><p><strong>奈曼分配法/最优分配法</strong>：假设抽取的第 i 层的样本数量为 n<sub>i</sub>，其值与该层个体数量N<sub>i</sub> 和样本标准差 S<sub>i</sub> 之积成正比，即 <span class="math display">\[
+ n_i = n \times \dfrac{N_i S_i}{\sum_i N_i S_i}
+ \]</span> 是利用样本标准差的加权分配. 目的是使方差最小(<span class="math inline">\(V_{SRS} \geqslant V_{prop} \geqslant V_{opt}\)</span>)</p></li>
+<li><p><strong>经济分配法</strong>：同时考虑变异性和代价的分配方法. 假设每层抽样代价为 C<sub>i</sub>， <span class="math display">\[
+ n_i = n \times \dfrac{\frac{N_i S_i}{C_i}}{\sum_{i=1}^{K} \frac{N_i S_i}{C_i}}
+ \]</span></p></li>
+</ol>
+<h1 id="水库抽样-reservoir-sampling">水库抽样 Reservoir Sampling</h1>
+<p><em>多年以后，面对蓄水池抽样算法，小茗同学将会回想起数学老师让他做“水池边放水边加水何时满水”的应用题的那个遥远的下午.</em></p>
+<p><span style="float:right"><em>——蓄水池抽样算法是一种优雅巧妙的算法</em></span></p>
+<p>? 给定一个数据流，这个数据流长度未知，并且对该流中的数据只能访问一次，那么用怎样的抽样算法才能从数据流中抽取 k 条数据并且使得所有数据被选中的概率相等呢？</p>
+<h2 id="水库抽样算法">水库抽样算法</h2>
+<h3 id="过程-1">过程</h3>
+<ol type="1">
+<li>将数据流中前 k 条数据保留，构建一个大小为 k 的水库</li>
+<li>对于数据流中第 m 条数据(<span class="math inline">\(m \gt k\)</span>)，以 <span class="math inline">\(\frac{k}{m}\)</span> （伪代码第8、9行）的概率决定是否由这条记录替换水库中的一条记录</li>
+<li>循环执行步骤2直至遍历全部数据</li>
+</ol>
+<p>水库抽样算法的空间复杂度为 <span class="math inline">\(O(k)\)</span>，时间复杂度为 <span class="math inline">\(O(N)\)</span>.</p>
+<p><img src="Reservoir Sampling 1.png" style="zoom:100%;float: middle;" /></p>
+<center>
+水库抽样算法伪代码
+</center>
+<h3 id="分析">分析</h3>
+<p><strong>定理</strong></p>
+<p>假设从长度为 N 的数据中随机抽取 k 条记录（$ N k$），水库抽样能保证每条记录以 <span class="math inline">\(\frac{k}{N}\)</span> 的概率保留在水库中.</p>
+<p>Proof <span class="math display">\[
+\text{第 i 个数据最终留在水库中的概率} = \text{第 i 个数据进入水库的概率} \times \text{第 i 个数据之后不被替换的概率}
+\]</span></p>
+<ol type="1">
+<li><p>当 n=k 时，任意一条记录保存在水库中的概率为 <span class="math inline">\(\frac{k}{n}=\frac{k}{k}=1\)</span></p></li>
+<li><p>假设当 n=m (<span class="math inline">\(m \gt k\)</span>)，水库中任意一条记录被抽到的概率为 <span class="math inline">\(\frac{k}{m}\)</span></p></li>
+<li><p>假设记录 t 是水库中的一条记录，当第 m+1 条数据到来时，记录 t 不被替换的概率为（第 m+1 条数据没有进入到水库中或者第 m+1 条数据替换了除 t 之外的其它某条数据） <span class="math display">\[
+ \left(1-\dfrac{k}{(m+1)}\right) + \dfrac{k}{(m+1)}\cdot \left(1-\dfrac{1}{k}\right) = \dfrac{(m+1) -1}{(m+1)} = \dfrac{m}{m+1}
+ \]</span> 同理，记录 t 不被第 m+2，m+3，...，N 条记录替换的概率为 <span class="math display">\[
+ \dfrac{m+1}{m+2},\quad \dfrac{m+2}{m+3},\quad ...,\quad \dfrac{N-1}{N}
+ \]</span> 因此，记录 t 保留在水库中的概率为 <span class="math display">\[
+ \dfrac{k}{m} \times \left( \dfrac{m}{m+1} \cdot \dfrac{m+1}{m+2} \cdot \dfrac{m+2}{m+3} \cdot \text{...} \cdot \dfrac{N-1}{N} \right) = \dfrac{k}{N}
+ \]</span> 证毕.</p>
+<p>水库抽样算法单遍扫描便可获得一个均匀的样本，其不足之处在于，当样本量 k 是与 总体容量 n 相关时，比如从总体中抽取 <span class="math inline">\(\frac{1}{3}\)</span> 的样本，此时需要其他的抽样算法.</p></li>
+</ol>
+<h2 id="分布式水库抽样算法">分布式水库抽样算法</h2>
+<p>考虑如下问题：</p>
+<p><img src="Reservoir Sampling 2.png" style="zoom:100%;float: middle" /></p>
+<p>假设一个Hadoop任务由 n 个Map组成，其中每个Map都接收到一个数据流，当这些数据无法完全保存在内存中时，如何随机抽取一个含有 k 条记录的样本？</p>
+<p>每个Map任务都接收到一个流数据，而且单个Map仅知道自身接收的数据的情况，不知道其它Map的情况. 此时可以通过分布式水库抽样算法解决.</p>
+<h3 id="过程-2">过程</h3>
+<p>在每个Map上单独运行水库抽样算法，对获得的n个子样本进行重抽样，获得最终样本. 假设在第 i 个Map上均匀地抽取 k 条记录，而第 i 个Map上接收到的数据量为 N<sub>i</sub>，令 <span class="math inline">\(N=\sum_{i=1}^{n} N_i\)</span> ，重抽样的步骤为</p>
+<ol type="1">
+<li>以 <span class="math inline">\(\frac{N_i}{N}\)</span> 的概率选择一个Map<em>（生成一个在[1,N]中的随机整数 m，如果 <span class="math inline">\(m \in \left( \sum_{i=1}^{i-1} N_i, \quad \sum_{i=1}^{i} N_i \right]\)</span>，那么选择第 i 个Map，类似于彩票调度算法）</em></li>
+<li>从第 i 个Map上随机地将一个子样本移到最终的样本中</li>
+<li>循环执行步骤1和步骤2，知道获得 k 个样本</li>
+</ol>
+<p>该算法给出的重抽样是<strong>无放回</strong>的，可以看出，分布式水库抽样算法的空间复杂度为 <span class="math inline">\(O(k)\)</span>，时间复杂度为 <span class="math inline">\(O(\max(N_i))\)</span>.</p>
+<p><img src="Reservoir Sampling 3.png" style="zoom:75%;float: middle;" /></p>
+<center>
+分布式水库抽样算法伪代码
+</center>
+<h3 id="分析-1">分析</h3>
+<p><strong>定理</strong></p>
+<p>分布式水库抽样算法保证了分布式系统中每条记录以 <span class="math inline">\(\frac{k}{N}\)</span> 的概率保留在最终的样本中，其中 N 为整个分布式系统中数据记录总数.</p>
+<p>Proof</p>
+<ol type="1">
+<li><p>假设 <span class="math inline">\(N_i \gt k\)</span></p>
+<p>由水库抽样算法可知，第 i 个Map中接收的一条记录出现在子样本中的概率为 <span class="math inline">\(\frac{k}{N_i}\)</span>，从第 i 个Map中抽取一条记录的概率为 <span class="math inline">\(\frac{1}{k}\)</span> ，因此第 i 个Map接收的一条记录出现在最终样本中的概率为 <span class="math display">\[
+ \dfrac{N_i}{N} \cdot \dfrac{k}{N_i} \cdot \dfrac{1}{k} = \dfrac{1}{N}
+ \]</span></p></li>
+<li><p>假设 <span class="math inline">\(N_i \leqslant k\)</span></p>
+<p>一条记录出现在第 i 个Map的子样本中的概率为 1，而从第 i 个Map中随机抽取一条记录的概率为 <span class="math inline">\(\frac{1}{N_i}\)</span>. 因此，第 i 个Map接收到的一条记录出现在最终样本中的概率为 <span class="math display">\[
+ \dfrac{N_i}{N} \cdot \dfrac{1}{N_i} = \dfrac{1}{N}
+ \]</span></p></li>
+</ol>
+<p>这样，重复 k 次后，无论哪个Map接收的数据记录，都以 <span class="math inline">\(\frac{k}{N}\)</span> 的概率保留在最终的样本中.</p>
+<h1 id="几中抽样算法的比较">几中抽样算法的比较</h1>
+<table>
+<tr>
+<td>
+类别
+</td>
+<td>
+共同点
+</td>
+<td>
+各自特点
+</td>
+<td>
+互相联系
+</td>
+<td>
+使用场景
+</td>
+</tr>
+<tr>
+<td>
+分布式水库抽样
+</td>
+<td rowspan="4">
+每个个体被抽取到的可能性相等
+</td>
+<td>
+先获取子样本再重抽样
+</td>
+<td>
+每个子系统相互独立
+</td>
+<td>
+分布式数据流
+</td>
+</tr>
+<tr>
+<td>
+水库抽样
+</td>
+<td>
+从总体中逐个随机抽取
+</td>
+<td>
+</td>
+<td>
+数据流
+</td>
+</tr>
+<tr>
+<td>
+系统抽样
+</td>
+<td>
+将总体分成均匀的几部分，按照事先确定的规则在各部分抽取
+</td>
+<td>
+特殊的分层抽样
+</td>
+<td>
+总体中个体数较多
+</td>
+</tr>
+<tr>
+<td>
+分层抽样
+</td>
+<td>
+将总体按照某种特征分成互补重叠的几层，每次再采用随机或系统抽样方法进行抽样
+</td>
+<td>
+各层在抽样时可采用系统抽样或者简单随机抽样
+</td>
+<td>
+总体由差异性明显的几部分组成
+</td>
+</tr>
+</table>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Yuxin Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://yuxinli1.github.io/Sampling/" title="Sampling">https://yuxinli1.github.io/Sampling/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/sampling/" rel="tag"># sampling</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Locality-Sensitive-Hashing/" rel="prev" title="Locality Sensitive Hashing">
+      <i class="fa fa-chevron-left"></i> Locality Sensitive Hashing
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Sketch/" rel="next" title="Sketch">
+      Sketch <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E5%B8%B8%E4%BD%BF%E7%94%A8%E7%9A%84%E6%8A%BD%E6%A0%B7%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">通常使用的抽样方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E%E6%8A%BD%E6%A0%B7%E7%9B%B8%E5%85%B3%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">1.2.</span> <span class="nav-text">与抽样相关的概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%BD%E6%A0%B7%E7%9A%84%E7%89%B9%E7%82%B9"><span class="nav-number">1.3.</span> <span class="nav-text">抽样的特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%BD%E6%A0%B7%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">1.4.</span> <span class="nav-text">抽样的应用场景</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E9%9A%8F%E6%9C%BA%E6%8A%BD%E6%A0%B7-sample-random-sampling"><span class="nav-number">2.</span> <span class="nav-text">简单随机抽样 Sample Random Sampling</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E6%8A%BD%E6%A0%B7-systematic-sampling"><span class="nav-number">3.</span> <span class="nav-text">系统抽样 Systematic Sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B4%E7%BA%BF%E7%AD%89%E8%B7%9D%E6%8A%BD%E6%A0%B7-linear-systematic-sampling"><span class="nav-number">3.1.</span> <span class="nav-text">直线等距抽样 Linear Systematic Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%86%E5%BD%A2%E7%AD%89%E8%B7%9D%E6%8A%BD%E6%A0%B7-circular-systematic-sampling"><span class="nav-number">3.2.</span> <span class="nav-text">圆形等距抽样 Circular Systematic Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">3.3.</span> <span class="nav-text">优缺点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E5%B1%82%E6%8A%BD%E6%A0%B7-stratified-sampling"><span class="nav-number">4.</span> <span class="nav-text">分层抽样 Stratified Sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B"><span class="nav-number">4.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E6%A0%B7%E5%88%86%E5%B1%82"><span class="nav-number">4.2.</span> <span class="nav-text">怎样分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B7%E6%9C%AC%E9%87%8F%E5%88%86%E9%85%8D%E6%96%B9%E6%B3%95"><span class="nav-number">4.3.</span> <span class="nav-text">样本量分配方法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B0%B4%E5%BA%93%E6%8A%BD%E6%A0%B7-reservoir-sampling"><span class="nav-number">5.</span> <span class="nav-text">水库抽样 Reservoir Sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B0%B4%E5%BA%93%E6%8A%BD%E6%A0%B7%E7%AE%97%E6%B3%95"><span class="nav-number">5.1.</span> <span class="nav-text">水库抽样算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B-1"><span class="nav-number">5.1.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">5.1.2.</span> <span class="nav-text">分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%B0%B4%E5%BA%93%E6%8A%BD%E6%A0%B7%E7%AE%97%E6%B3%95"><span class="nav-number">5.2.</span> <span class="nav-text">分布式水库抽样算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B-2"><span class="nav-number">5.2.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E6%9E%90-1"><span class="nav-number">5.2.2.</span> <span class="nav-text">分析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%A0%E4%B8%AD%E6%8A%BD%E6%A0%B7%E7%AE%97%E6%B3%95%E7%9A%84%E6%AF%94%E8%BE%83"><span class="nav-number">6.</span> <span class="nav-text">几中抽样算法的比较</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yuxin Li"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Yuxin Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/YuxinLi1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;YuxinLi1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yxleezw@163.com" title="E-Mail → mailto:yxleezw@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuxin Li</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'e213ec0829f4e0d15e1e',
+      clientSecret: '5612bacf3b3c67a684b2103b4d03bc7fe5182a91',
+      repo        : 'blog_comments',
+      owner       : 'YuxinLI1',
+      admin       : ['YuxinLi1'],
+      id          : 'a0dc83569b8938cc3450cb5bdaf26313',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <div style="width:100%;height:100%;position:fixed;top:0;z-index:-1;">
+  	<canvas id="canvas">
+  </div>
+  <script type="text/javascript" src="/js/bg_lines.js"></script>
+</body>
+</html>

@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Noto Serif SC:300,300italic,400,400italic,700,700italic|Roboto Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yuxinli1.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="引子 联合概率 定义： 给定n个随机变量X1, X2, ..., Xn，分别取值为x1, x2, ..., xn 的联合概率 \(f(x_1,x_2,\dots,x_n)\)表示为 \[ f(x_1,x_2,\dots,x_n)&#x3D;P(X_1&#x3D;x_1,X_2&#x3D;x_2,\dots,X_n&#x3D;x_n) \] 若n个随机变量是相互独立的，那么其联合概率可以很方便地计算为 \[ \begin{align*}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Random Walk and PageRank">
+<meta property="og:url" content="https://yuxinli1.github.io/Random-Walk-and-PageRank/index.html">
+<meta property="og:site_name" content="Yuxin&#39;s blog">
+<meta property="og:description" content="引子 联合概率 定义： 给定n个随机变量X1, X2, ..., Xn，分别取值为x1, x2, ..., xn 的联合概率 \(f(x_1,x_2,\dots,x_n)\)表示为 \[ f(x_1,x_2,\dots,x_n)&#x3D;P(X_1&#x3D;x_1,X_2&#x3D;x_2,\dots,X_n&#x3D;x_n) \] 若n个随机变量是相互独立的，那么其联合概率可以很方便地计算为 \[ \begin{align*}">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yuxinli1.github.io/Random-Walk-and-PageRank/概率的链式法则.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Random-Walk-and-PageRank/PageRank1.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Random-Walk-and-PageRank/PageRank2.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Random-Walk-and-PageRank/pagerank.1.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Random-Walk-and-PageRank/pagerank.2.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Random-Walk-and-PageRank/pagerank.3.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Random-Walk-and-PageRank/PageRank3.png">
+<meta property="article:published_time" content="2021-01-25T10:48:31.000Z">
+<meta property="article:modified_time" content="2021-01-25T11:33:33.614Z">
+<meta property="article:author" content="Yuxin Li">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="random walk">
+<meta property="article:tag" content="PageRank">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yuxinli1.github.io/Random-Walk-and-PageRank/概率的链式法则.png">
+
+<link rel="canonical" href="https://yuxinli1.github.io/Random-Walk-and-PageRank/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Random Walk and PageRank | Yuxin's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Yuxin's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Random-Walk-and-PageRank/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Random Walk and PageRank
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:48:31 / 修改时间：19:33:33" itemprop="dateCreated datePublished" datetime="2021-01-25T18:48:31+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="引子">引子</h1>
+<p><strong>联合概率</strong></p>
+<p><strong>定义：</strong> 给定n个随机变量X<sub>1</sub>, X<sub>2</sub>, ..., X<sub>n</sub>，分别取值为x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>n</sub> 的联合概率 <span class="math inline">\(f(x_1,x_2,\dots,x_n)\)</span>表示为 <span class="math display">\[
+f(x_1,x_2,\dots,x_n)=P(X_1=x_1,X_2=x_2,\dots,X_n=x_n)
+\]</span> 若n个随机变量是相互独立的，那么其联合概率可以很方便地计算为 <span class="math display">\[
+\begin{align*}
+f(x_1,x_2,\dots,x_n) &amp;= P(X_1=x_1,X_2=x_2,\dots,X_n=x_n) \\
+&amp;= \prod_{i=1}^{n} P(X_i=x_i) = \prod_{i=1}^{n} f_{X_i}(x_i)
+\end{align*}
+\]</span> 然而通常情况下，数据之间并不总是独立的，比如对于声音，文本数据，其前后之间是有一定联系的.</p>
+<a id="more"></a>
+<p><strong>概率的链式法则</strong></p>
+<p>两个事件同时发生的概率用条件概率表示为： <span class="math display">\[
+P(a,b) = P(a|b) \cdot P(b)
+\]</span> 三个事件的概率链式调用为： <span class="math display">\[
+\begin{align*}
+P(a,b,c) &amp;= P(a|b,c)\cdot P(b,c) \\
+&amp;= P(a|b,c) \cdot P(b|c) \cdot P(c)
+\end{align*}
+\]</span> 其中<span class="math inline">\(P(a|b,c)\)</span>表示在事件b和c都发生的情况下，事件a发生的概率. 推广到N个事件，有 <span class="math display">\[
+\begin{align*}
+P(X_1,X_2,\dots,X_n) &amp;= P(X_1|X_2,X_3,\dots,X_n) \cdot P(X_2|X_3,X_4,\dots,X_n) \cdot \dots \cdot P(X_{n-1}|X_n) \cdot P(X_n) \\
+&amp;= P(X_n) \prod_{i=1}^{n-1} P(X_{i}|X_{i+1},\dots,X_n) \\
+&amp;= P(X_1) \prod_{i=2}^{n} P(X_{i}|X_{i-1},\dots,X_1)
+\end{align*}
+\]</span> 那链式法则的作用呢？</p>
+<p>假设事件a与事件b独立，那么有 <span class="math display">\[
+P(a|b) = P(a)
+\]</span> 推广到三个事件有 <span class="math display">\[
+P(a|b,c) = P(a|c)
+\]</span> 即事件b不是事件a的发生条件，a只与c有关.</p>
+<p><strong>例子：</strong> 假设有事件A，B，C，D，E，它们之间的关系·如下</p>
+<p><img src="概率的链式法则.png" style="zoom:50%;float:middle" /></p>
+<p>则 <span class="math display">\[
+\begin{align*}
+P(A,B,C,D,E) &amp;= P(E | B, D, C, A) * P(B, D, C, A)\\
+&amp;= P(E | B, D, C, A) * P(B | D, C, A) *  P(D, C, A)\\
+&amp;= P(E | B, D, C, A) * P(B | D, C, A) *  P(D | C, A) * P(C, A)\\
+&amp;= P(E | B, D, C, A) * P(B | D, C, A) *  P(D | C, A) * P(C | A) * P(A)
+\end{align*}
+\]</span> 而 <span class="math display">\[
+P(E | B, D, C, A) = P(E | B)\\
+P(B | D, C, A) = P(B | C, A)\\
+P(D | C, A) = P(D | C)\\
+P(C | A) = P(C)
+\]</span> 所以 <span class="math display">\[
+P(A, B, C, D, E) = P(E | B) * P(B | C, A) * P(D | C) * P(C) * P(A)
+\]</span></p>
+<p><strong>一阶相关关系</strong> first-order correlation <span class="math display">\[
+P(X_i|X_i-1,\dots,X_1) = P(X_i|X_{i-1})
+\]</span> <strong>t阶相关关系</strong> <span class="math display">\[
+P(X_i|X_{i-1},\dots,X_1) = P(X_i|X_i-1,\dots,X_{i-1})
+\]</span></p>
+<h1 id="随机过程-random-process">随机过程 Random process</h1>
+<h2 id="定义">定义</h2>
+<p><strong>定义：（时间集合）</strong> 设T是实数轴<span class="math inline">\((-\infty,\infty)\)</span>上的子集，且包含无限多个元素. 随机序列是时间的一个函数，可表示为<span class="math inline">\(\{X(t),t\in T\}\)</span>，其中时间集合T表示了随机序列所有可能的时间.</p>
+<p><strong>定义：（随机过程）</strong> 设<span class="math inline">\((\Omega,F,P)\)</span>是一概率空间，T表示时间集合，若对<span class="math inline">\(\forall t \in T\)</span>，均有定义在<span class="math inline">\((\Omega,F,P)\)</span>上的一个随机变量<span class="math inline">\(X(t,\omega)\)</span>，<span class="math inline">\((\omega \in \Omega)\)</span>与之对应，则称依赖于时间t的随机变量序列<span class="math inline">\(X(t,\omega)\)</span>为一随机过程. 记为<span class="math inline">\(\{X(t,\omega),t\in T, \omega \in \Omega\}\)</span>，简记为<span class="math inline">\(\{X(t),t \in T\}\)</span>. 随机过程<span class="math inline">\(\{X(t),t \in T\}\)</span>的所有可能的取值被称为该随机过程的<strong>状态空间</strong>或者<strong>值域</strong>.</p>
+<blockquote>
+<p>概率空间<span class="math inline">\((\Omega,F,P)\)</span>：<span class="math inline">\(\Omega\)</span>表示样本空间，F为样本空间<span class="math inline">\(\Omega\)</span>的幂集的子集，P为概率</p>
+<p>幂集：集合{a,b,c}的幂集为{<span class="math inline">\(\emptyset\)</span>, {a}, {b}, {c}, {a,b}, {a,c}, {b,c}, {a,b,c}}</p>
+</blockquote>
+<p><strong>例子：</strong>对于用户上网的过程，随机过程<span class="math inline">\(\{X(t,\omega),t\in T, \omega \in \Omega\}\)</span>中的时间集合是离散的，因此<span class="math inline">\(X(n,\omega)\)</span>表示该用户第n个访问的网页，其中状态空间为所有网页构成的集合，也是离散的.</p>
+<h1 id="马尔可夫过程">马尔可夫过程</h1>
+<h2 id="马尔可夫性-markov-property">马尔可夫性 Markov Property</h2>
+<p><strong>定义：（马尔可夫性Markov Property）</strong> 设<span class="math inline">\(\{X(t),t \in T\}\)</span>是一个随机过程，已知<span class="math inline">\(\{X(t),t \in T\}\)</span>在当前<span class="math inline">\(t_n\)</span>时刻所处的状态，它在 <span class="math inline">\(t &gt; t_n\)</span> 时刻所处的状态与其在 t<sub>n</sub> 时刻之前所处的状态无关，则称<span class="math inline">\({X(t),t \in T}\)</span>满足马尔可夫性.</p>
+<blockquote>
+<p>描述了随机过程的无记忆性，即已知现在，将来和过去是独立的.</p>
+<p>满足马尔可夫性的随机过程称为马尔可夫过程.</p>
+</blockquote>
+<h2 id="马尔可夫过程-markov-process">马尔可夫过程 Markov Process</h2>
+<p><strong>定义：（马尔可夫过程）</strong> 设<span class="math inline">\(\{X(t),t \in T\}\)</span>的z状态空间为S，如果对 <span class="math inline">\(\forall t_0 &lt; t_1 &lt; \dots &lt; t_n &lt; t_{n+1} \in T\)</span>，在条件 <span class="math inline">\(X(t_i)=x_i\)</span>，<span class="math inline">\(x_i \in S\)</span>，<span class="math inline">\(i=0,1,\dots,n\)</span>下，<span class="math inline">\(X(t_{n+1})\)</span>的条件概率恰好等于在条件<span class="math inline">\(X(t_n)=x_n\)</span>下的条件概率，即 <span class="math display">\[
+P(X(t_{n+1})=x_{n+1}|X(t_0)=x_0,\dots,X(t_n)=x_n) = P(X(t_{n+1})=x_{n+1}|X(t_n)=x_n)
+\]</span> 则称<span class="math inline">\(\{X(t),t \in T\}\)</span>为马尔可夫过程.</p>
+<blockquote>
+<p>这里关注的马尔可夫过程不仅其时间集合是离散的，其状态空间也是离散的，这类特殊的马尔可夫过程称为<strong>马尔可夫链</strong>，简称<strong>马氏链</strong>.</p>
+</blockquote>
+<h2 id="转移概率-transition-probability">转移概率 Transition Probability</h2>
+<p><strong>定义：（转移概率）</strong> 称条件概率 <span class="math inline">\(P(X_{n+k}=j | X_n=i)\)</span> 为马氏链 <span class="math inline">\(\{X_n: n \in \mathbb{N}\}\)</span> 的<strong>k 步转移概率</strong>，记为 <span class="math inline">\(p_{ij}^{(k)}(n)\)</span>，其中 <span class="math inline">\(i,j \in S\)</span>，<span class="math inline">\(k&gt;0\)</span>. 它表示马氏链 <span class="math inline">\(\{X_n: n \in \mathbb{N}\}\)</span> 在 n 时刻处于状态 i 的条件下，经过 k 步转移，于 n+k 时刻到达状态 j 的概率.</p>
+<blockquote>
+<p>当k=1时，称之为<strong>一步转移概率</strong>，简称<strong>转移概率</strong>，记为<span class="math inline">\(p_{ij}(n)\)</span>.</p>
+</blockquote>
+<h2 id="齐次马尔可夫链-homogeneous-markov-chain">齐次马尔可夫链 Homogeneous Markov Chain</h2>
+<p>若对任意的<span class="math inline">\(i,j \in S\)</span>，马氏链<span class="math inline">\(\{X_n: n \in \mathbb{N} \}\)</span> 的转移概率 <span class="math inline">\(p_{ij}(n)\)</span> 与 n 无关，即对任意时刻n，i到j的一步转移概率有 <span class="math display">\[
+p_{ij}(n) = p_{ij}(n+1) = p_{ij}(n+2) = \dots
+\]</span> 则称马氏链是齐次的，并记概率 <span class="math inline">\(p_{ij}(n)\)</span> 为 <span class="math inline">\(p_{ij}\)</span>. 特别的，齐次马氏链的<span class="math inline">\(\mathbf{P}^{(k)} = \mathbf{P}^k\)</span>.</p>
+<blockquote>
+<p>无论当前是第几步，只要起点和终点相同，则它们之间的一步转移概率就相同，这样的马氏链被称为齐次的马尔可夫链.</p>
+</blockquote>
+<h1 id="随机游走-random-walk">随机游走 Random Walk</h1>
+<h2 id="图-graph">图 Graph</h2>
+<p><strong>定义：（图）</strong> 图G记做一个二元组<span class="math inline">\(G=(V,E)\)</span>，其中，V是有限非空的顶点集合，记为<span class="math inline">\(V(G)\)</span>，E是<span class="math inline">\(V \times V\)</span>的一个子集，其元素是图的边Edge，记为<span class="math inline">\(E(G)\)</span>.</p>
+<h2 id="度degree">度Degree</h2>
+<ul>
+<li>出度 Out-degree</li>
+<li>入度 In-degree</li>
+</ul>
+<h2 id="路径path">路径Path</h2>
+<p>从顶点u到顶点v的一条路径是指一个点边序列：v<sub>0</sub>, e<sub>1</sub>, v<sub>1</sub>, e<sub>2</sub>, v<sub>2</sub>, ... , e<sub>k</sub>, v<sub>k</sub>，k为路径长度，起点v<sub>0</sub>=u，终点v<sub>k</sub>=v，若u=v，则该条路径形成一个环路，称为<strong>闭环</strong>.</p>
+<h2 id="连通分量-connected-component">连通分量 Connected Component</h2>
+<p>在一个途中，若从一个顶点到另一个顶点有路径相连，则称这两个顶点是<strong>连通的</strong>. 若图中任意两点都是连通的，则称图G为<strong>连通图</strong>.</p>
+<p>无向图的连通子图称为G的<strong>连通分量</strong>，极大连通子图是指对于图G中最大的一个连通分量.</p>
+<p>在<strong>有向图</strong><span class="math inline">\(G=(V,E)\)</span>中，若V中任意两个不同的顶点u到顶点v和顶点v到顶点u之间都存在路径，则称图G为<strong>强连通图</strong>，对应的有向图G的连通子图称为G的<strong>强连通分量</strong>.</p>
+<h2 id="图的表示方法">图的表示方法</h2>
+<ul>
+<li>邻接表 Adjacency list</li>
+<li>邻接矩阵 Adjacency matrix</li>
+</ul>
+<h2 id="概率转移矩阵-probability-transition-matrix">概率转移矩阵 Probability Transition Matrix</h2>
+<p>称以马氏链<span class="math inline">\(\{X_n:n\in \mathbb{N}\}\)</span>的 k 步转移概率 <span class="math inline">\(p_{ij}^{(k)}(n)\)</span> 为第 i 行 第 j 列元素的矩阵 <span class="math display">\[
+\mathbf{P}^{(k)}(n) = [p_{ij}^{(k)}(n)]
+\]</span> 为马氏链<span class="math inline">\(\{X_n:n\in \mathbb{N}\}\)</span>在n时刻的k步转移概率矩阵.</p>
+<p>约定当 k=0 时， <span class="math display">\[
+\begin{align*}
+\mathbf{P}^{(0)}(n) = \left\{ 
+\begin{array}{ll}
+1, &amp; \text{if $i=j$} \\
+0, &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span> 此时<span class="math inline">\(\mathbf{P}^{(0)}(n) = \mathbf{I}\)</span>为单位矩阵.</p>
+<blockquote>
+<p>性质：</p>
+<ul>
+<li><span class="math inline">\(0 \leqslant p_{ij}^{(n)} \leqslant 1, \forall i,j \in S\)</span></li>
+<li><span class="math inline">\(\sum_{j} p_{ij}^{(n)}=1, \forall i,j \in S\)</span>，即转移概率矩阵行和为1，列和不一定为1</li>
+</ul>
+</blockquote>
+<h1 id="平稳分布stationary-distribution">平稳分布Stationary Distribution</h1>
+<h2 id="状态分布-state-distribution">状态分布 State Distribution</h2>
+<p>令<span class="math inline">\(\bf{\pi}^{(t)}\)</span>为状态空间为S的马尔可夫链在时刻 t 的状态分布，即 <span class="math display">\[
+\pi^{(t)} = P(X_t=x)
+\]</span> 特别的，将<span class="math inline">\(\bf{\pi}^{(0)}\)</span>称为初始分布.</p>
+<blockquote>
+<p>性质：</p>
+<ul>
+<li><span class="math inline">\(\bf{\pi}^{(t)}\)</span> 的每个分量满足 <span class="math inline">\(0 \leqslant \bf{\pi}_i^{(t)} \leqslant 1\)</span></li>
+<li><span class="math inline">\(\sum_{i \in S} \pi_j^{(t)} = 1\)</span></li>
+<li><span class="math inline">\(\bf{\pi}^{(t+1)} = \bf{\pi}^{(t)}\mathbf{P}(t)\)</span></li>
+</ul>
+</blockquote>
+<h2 id="平稳分布-stationary-distribution">平稳分布 Stationary Distribution</h2>
+<p>对于一个转移概率矩阵为 <span class="math inline">\(\mathbf{P}\)</span> 的有限状态马尔可夫链，若状态分布 <span class="math inline">\(\mathbf{\pi}\)</span> 满足： <span class="math display">\[
+\mathbf{\pi P} = \mathbf{\pi}
+\]</span> 则称 <span class="math inline">\(\mathbf{\pi}\)</span> 为该马尔可夫链的平稳分布.</p>
+<p><strong>定理：</strong> 如果一个马氏链有状态转移矩阵<span class="math inline">\(\mathbf{P}\)</span>，状态空间<span class="math inline">\(S=\{1,2,\dots \}\)</span>，并且它满足<strong>不可约</strong>和<strong>反周期</strong>性质，那么<span class="math inline">\(\lim\limits_{n\rightarrow \infty} P_{ij}^{n}\)</span>与 i 无关，即 <span class="math display">\[
+\lim_{n \rightarrow \infty} P_{ij}^{n} = \pi(j)
+\]</span> 即 <span class="math display">\[
+\begin{align*}
+\lim_{n \rightarrow \infty} \mathbf{P}^n = \left[ 
+\begin{array}{ccccc}
+\pi_1 &amp; \pi_2 &amp; \dots &amp; \pi_j &amp; \dots \\
+\pi_1 &amp; \pi_2 &amp; \dots &amp; \pi_j &amp; \dots \\
+\dots &amp; \dots &amp; \dots &amp; \dots &amp; \dots \\
+\pi_1 &amp; \pi_2 &amp; \dots &amp; \pi_j &amp; \dots \\
+\dots &amp; \dots &amp; \dots &amp; \dots &amp; \dots 
+\end{array}
+\right]
+\end{align*}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{\pi} = [\pi_1, \pi_2, \dots,\pi_j,\dots], \quad \sum_{i=1}^{\infty} \pi(j) = 1
+\]</span></p>
+<h2 id="不可约性-irreducibility">不可约性 Irreducibility</h2>
+<p>如果从状态 x 可以经过有限步转移到达状态 y，并且状态 y 也可以经过有限步转移到达状态 x，那么称状态 x 和状态 y 是连通的. 如果马氏链中任意两个状态都是连通的，则称该马氏链是<strong>不可约irreducible</strong>.</p>
+<blockquote>
+<ul>
+<li>马氏链中任意两个状态都是连通的，意味着存在一个 n，使得矩阵 <span class="math inline">\(\mathbf{P}^{(n)}\)</span> 中任意一个元素都大与0</li>
+<li>如果一张图是强连通的，那么它一定是不可约的，否则这个图是可约的</li>
+<li>如果马氏链是不可约的，那么所有状态的周期都是相同的</li>
+</ul>
+</blockquote>
+<h2 id="反周期性-aperiodic">反周期性 aperiodic</h2>
+<p>状态 x 的周期 d<sub>x</sub> 是集合 <span class="math inline">\(\{n | (\mathbf{P}^n)_{x,x} &gt; 0 \}\)</span> 的最大公约数. 特别地，如果 <span class="math inline">\(\forall n \geqslant 1\)</span>，<span class="math inline">\((\mathbf{P}^n)_{x,x} = 0\)</span>，那么 <span class="math inline">\(d_{x} = \infty\)</span>. 而如果一个马氏链的所有状态的周期均为1，则称这个马氏链是<strong>反周期</strong>的.</p>
+<blockquote>
+<p>对于一个有限的马氏链，<span class="math inline">\((\mathbf{P}^n)_{x,x} &gt; 0\)</span> 意味着状态 x 在一个长度为 n 的环上. 那么状态 x 的周期是经过该状态所有环的最大公约数. <strong>反周期指的是马氏链的状态转化不是循环的.</strong></p>
+</blockquote>
+<p><strong>定理：</strong> 如果状态 x 和状态 y 是连通的，那么 <span class="math inline">\(d_x=d_y\)</span></p>
+<blockquote>
+<p>即如果状态 x 和 y 之间存在相互可达的路径，则这两个状态的周期相等</p>
+</blockquote>
+<p><strong>定理：</strong> 如果 <span class="math inline">\(n \mod d_x \ne 0\)</span>，那么 <span class="math inline">\((\mathbf{P}^n)_{x,x} = 0\)</span></p>
+<blockquote>
+<p>状态 x 的周期为 d<sub>x</sub>，若 n 不为 d<sub>x</sub> 的整数倍，则从 x 出发，经过 n 步是不可能回到状态 x 的</p>
+</blockquote>
+<h1 id="pagerank">PageRank</h1>
+<p>PageRank衡量网页“重要程度”的两个假设为：</p>
+<ul>
+<li>如果有很多网页同时指向某个网页，被指向的这个网页会比较重要，其对应的PageRank值更大</li>
+<li>如果一个非常重要的页面指向了某个网页，那么被指向的这个网页也会相对较为重要，其对应的PageRank值更大</li>
+</ul>
+<p><strong>定义：（PageRank值）</strong> 设 u 是有向图G中的一个顶点，<span class="math inline">\(N(u)\)</span> 表示图G中指向顶点 u 的顶点的集合. 则图顶点 u 的Pageank值可以计算为 <span class="math display">\[
+PR(u) = \sum_{v \in N(u)} \dfrac{PR(v)}{N(v)}
+\]</span> 其中<span class="math inline">\(PR(u)\)</span>表示顶点 u 的PageRank值.</p>
+<blockquote>
+<p>从上式可以看出：</p>
+<p>一方面，若是 <span class="math inline">\(N(u)\)</span> 中包含的顶点越多，说明指向顶点 u 的顶点越多，因此顶点u的PageRank值越大；</p>
+<p>另一方面，顶点 u 从指向它的顶点 v 处获得的重要程度为 <span class="math inline">\(\dfrac{PR(v)}{N(v)}\)</span>，即顶点 v 将它的PageRank值平均分给其指向的顶点，因此，顶点 v 的PageRank值越大，其所指向的顶点数量越少，那么顶点 u 从 v 处继承的PageRank值也越大.</p>
+</blockquote>
+<h2 id="流量方程-flow-equation">流量方程 flow equation</h2>
+<p>设顶点 v<sub>i</sub> 有 n 条出链接，概率矩阵P，PageRank向量 r，r<sub>i</sub> 表示顶点 v<sub>i</sub> 的重要程度，且<span class="math inline">\(\sum\limits_{i=1}^{n} r_i = 1\)</span>. <span class="math display">\[
+\begin{align*}
+r = \left(
+\begin{array}{c}
+r_1\\
+r_2\\
+\dots \\
+r_n
+\end{array}
+\right)
+\qquad 
+\mathbf{P} = \left(
+\begin{array}{cccc}
+p_{11} &amp; p_{12} &amp; \dots &amp; p_{1n} \\
+p_{21} &amp; p_{22} &amp; \dots &amp; p_{2n} \\
+\dots &amp; \dots &amp; \dots &amp; \dots \\
+p_{n1} &amp; p_{n2} &amp; \dots &amp; p_{nn}
+\end{array}
+\right)
+\end{align*}
+\]</span> 由平稳分布 <span class="math inline">\(\mathbf{\pi} = \mathbf{\pi P}\)</span> 得流量方程为： <span class="math display">\[
+r^T = r^T \cdot P \quad or \quad r=P^T \cdot r
+\]</span> r是状态转移矩阵的平稳分布. 其中 <span class="math inline">\(r_j = (r^T \mathbf{P})_j = \sum\limits_{i=1}^{n} p_{ij} r_i\)</span>.</p>
+<h2 id="pagerank算法">PageRank算法</h2>
+<p>因此，求解图中顶点的PageRank值只需求解概率转移矩阵P的特征值1对应的左特征向量. 可以根据幂法求解，伪代码如下：</p>
+<p><img src="PageRank1.png" style="zoom:80%;float:middle;" /></p>
+<p>由于实际中Web图非常大且每轮迭代的计算复杂度为<span class="math inline">\(O(|V|^2)\)</span>，因此该算法是不可行的. 由于概率转移矩阵P是一个稀疏矩阵，因此对该算法改进如下：</p>
+<p><img src="PageRank2.png" style="zoom:80%;float:middle;" /></p>
+<p>该算法的复杂度为<span class="math inline">\(O(N|E|)\)</span>，其中N为算法迭代次数，<span class="math inline">\(|E|\)</span>为边的集合的模. 算法7.1直接使用邻接矩阵计算，而算法7.2使用邻接表进行计算，其空间和时间效率都比较高.</p>
+<p>为了使算法能够收敛，则概率转移矩阵P必须存在平稳分布. 然而现实中的Web图对应的随机游走不一定存在平稳分布，即使存在，其平稳分布也不一定唯一.</p>
+<blockquote>
+<p>注意算法7.1的第5行和算法7.2的第6行以及PageRank值的定义，新的PageRank值并不是在旧的上面进行更新，而是直接取代旧的PageRank值.</p>
+</blockquote>
+<h2 id="非收敛情况">非收敛情况</h2>
+<p>一、 存在多个连通分量</p>
+<p><img src="pagerank.1.png" style="zoom:80%;float:middle;" /></p>
+<p>例如上图所示，该图存在平稳分布<span class="math inline">\((0.4,0.6,0,0)\)</span>和<span class="math inline">\((0,0,0.5,0.5)\)</span>. 尽管其存在平稳分布，但却不唯一，会导致结果不收敛.</p>
+<p>二、Dead Ends</p>
+<p><img src="pagerank.2.png" style="zoom:80%;float:middle;" /></p>
+<p>在该图中，顶点3每轮迭代都继承来自顶点1和顶点2的PageRank值，但是却没有向系统中返回PageRank值，导致发生“泄漏”，最终算法会收敛到<span class="math inline">\((0,0,0)\)</span>，但是这并不是平稳分布.</p>
+<p>三、Spider Traps</p>
+<p><img src="pagerank.3.png" style="zoom:80%;float:middle;" /></p>
+<p>与Dead Ends不同的是，顶点3此时向系统中返回PageRank值，但是只返回给自己，这导致系统中的流量最终全部汇聚到顶点3.</p>
+<h2 id="解决方法">解决方法</h2>
+<p>为了保证输入的图是不可约、反周期的，Google提出了如下改进方法：当用户访问某个网页时，有两种选择</p>
+<ul>
+<li>以概率 <span class="math inline">\(\beta\)</span> 按照链接关系浏览</li>
+<li>以概率 <span class="math inline">\(1-\beta\)</span> 随机跳转到任意一个其它的网页进行浏览</li>
+<li>通常概率 <span class="math inline">\(\beta = 0.85 \quad or \quad 0.9\)</span></li>
+</ul>
+<p>此时，原Web图对应的概率矩阵为 <span class="math display">\[
+\begin{align*}
+\mathbf{P} = [p_{ij}] \quad and \quad 
+p_{ij} = 
+\left\{ 
+\begin{array}{ll}
+\dfrac{1}{N(i)}, &amp; \text{如果网页i有指向网页j的锚链接} \\
+0, &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span> 经过修正后的概率转移矩阵为： <span class="math display">\[
+\widetilde{\mathbf{P}} = \beta \mathbf{P} + （1-\beta)[\dfrac{1}{n}]_{n \times n}
+\]</span> 其中 <span class="math inline">\([\frac{1}{n}]_{n \times n}\)</span> 表示每个元素都为 <span class="math inline">\(\frac{1}{n}\)</span> 的 <span class="math inline">\(n \times n\)</span> 的方阵.</p>
+<blockquote>
+<p>但是网页中可能存在 Dead Ends，因此<span class="math inline">\(\mathbf{P}\)</span>中可能存在某一行全部为0 的情况. 那么矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 还是概率转移矩阵么？</p>
+</blockquote>
+<p>然而此时原来的稀疏矩阵变为了稠密矩阵，需要消耗巨大的存储空间和计算性能. 因此，需要继续进行优化，而 <span class="math display">\[
+\begin{align*}
+r_j &amp;= \sum_{i=1}^{n} \widetilde{P_{ij}}r_i \\
+&amp;= \sum_{i=1}^{n} (\beta P_{ij} + \dfrac{1-\beta}{n})r_i \\
+&amp;= \sum_{i=1}^{n} \beta P_{ij} r_i + \sum_{i=1}^{n} \dfrac{1-\beta}{n} r_i \\
+&amp;= \sum_{i=1}^{n} \beta P_{ij} r_i + \dfrac{1-\beta}{n}
+\end{align*}
+\]</span> 因此得到一个新的计算平稳分布的公式： <span class="math display">\[
+\mathbf{r}^T = \beta \mathbf{r}^T \cdot \mathbf{P} + [\dfrac{1-\beta}{n}]_n
+\]</span> <span class="math inline">\([\dfrac{1-\beta}{n}]_n\)</span> 表示每个元素都为<span class="math inline">\(\dfrac{1-\beta}{n}\)</span> 的 n 维向量. 修改后的算法为：</p>
+<p><img src="PageRank3.png" style="zoom:70%;float:middle;" /></p>
+<h2 id="收敛性分析">收敛性分析</h2>
+<ol type="1">
+<li><p>矩阵<span class="math inline">\(\widetilde{\mathbf{P}}\)</span>是概率转移矩阵吗？</p>
+<p>修改后的概率矩阵为 <span class="math display">\[
+\widetilde{\mathbf{P}} = \beta \mathbf{P} + (1-\beta)\dfrac{1}{n}\mathbf{ee}^T
+\]</span> 概率矩阵<span class="math inline">\(\mathbf{P}\)</span>行和为1<strong>（真的么？）</strong>，矩阵 <span class="math inline">\(\frac{1}{n} \mathbf{ee}^T\)</span> 中行和也为1，因此矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 中行和也为1，因此该矩阵是转移概率矩阵.</p>
+<blockquote>
+<p>上面的算法中有提到</p>
+</blockquote></li>
+<li><p>概率转移矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 对应的随机游走是不可约的吗？</p>
+<p>是不可约的. 加入随机跳转后，可以保证矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 中每个元素值均大于0，因此 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 所对应的有向图中每两个顶点之间都存在有向边，因此是不可约的.</p></li>
+<li><p>概率转移矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 对应的随机游走是反周期的吗？</p>
+<p>是反周期的. 由于矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 每个元素的值军均大于0，因此其所对应的随机游走有自循环，因此矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 对应的随机游走是反周期的.</p></li>
+</ol>
+<h1 id="小结">小结</h1>
+<p>PageRank是对图中顶点进行排序的算法，但是它仅仅考虑顶点之间的链接关系. 如果进一步考虑用户查询历史，用户兴趣爱好等，需要进一步改进PageRank算法<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. 此外，对于二分图中顶点排序的问题，由于把二分图看作一个随机游走是周期性的，没有唯一的平稳分布，因此PageRank不能直接处理，对此，又有人提出了HITS<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>，BiPank<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a><a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>，BiNE<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>等算法.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>Eneko Agirre and Aitor Soroa. Personalizing pagerank for word sense disambiguation. In Proceedings of the 12th Conference of the European Chapter of the Association for Computational Linguistics, pages 33–41. Association for Computational Linguistics, 2009.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>Taher H Haveliwala. Topic-sensitive pagerank. In Proceedings of the 11th international conference on World Wide Web, pages 517–526. ACM, 2002.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>Chris Ding, Xiaofeng He, Parry Husbands, Hongyuan Zha, and Horst Simon. Pagerank, hits and a unified framework for link analysis. In Proceedings of the 2003 SIAM International Conference on Data Mining, pages 249–253. SIAM, 2003.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>Xiangnan He, Ming Gao, Min-Yen Kan, Yiqun Liu, and Kazunari Sugiyama. Predicting the popularity of web 2.0 items based on user comments. In The 37th International ACM SIGIR Conference on Research and Development in Information Retrieval, SIGIR ’14, Gold Coast, QLD, Australia - July 06 - 11, 2014, pages 233–242, 2014.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>Xiangnan He, Ming Gao, Min-Yen Kan, and Dingxian Wang. Birank: Towards ranking on bipartite graphs. IEEE Transactions on Knowledge and Data Engineering, 29(1):57–71, 2016.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p>Ming Gao, Leihui Chen, Xiangnan He, and Aoying Zhou. Bine: Bipartite network embedding. In The 41st International ACM SIGIR Conference on Research &amp; Development in Information Retrieval, SIGIR 2018, Ann Arbor, MI, USA, July 08-12, 2018, pages 715–724, 2018.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Yuxin Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://yuxinli1.github.io/Random-Walk-and-PageRank/" title="Random Walk and PageRank">https://yuxinli1.github.io/Random-Walk-and-PageRank/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/random-walk/" rel="tag"># random walk</a>
+              <a href="/tags/PageRank/" rel="tag"># PageRank</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Sketch/" rel="prev" title="Sketch">
+      <i class="fa fa-chevron-left"></i> Sketch
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%95%E5%AD%90"><span class="nav-number">1.</span> <span class="nav-text">引子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9A%8F%E6%9C%BA%E8%BF%87%E7%A8%8B-random-process"><span class="nav-number">2.</span> <span class="nav-text">随机过程 Random process</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">2.1.</span> <span class="nav-text">定义</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E8%BF%87%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">马尔可夫过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E6%80%A7-markov-property"><span class="nav-number">3.1.</span> <span class="nav-text">马尔可夫性 Markov Property</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E8%BF%87%E7%A8%8B-markov-process"><span class="nav-number">3.2.</span> <span class="nav-text">马尔可夫过程 Markov Process</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AC%E7%A7%BB%E6%A6%82%E7%8E%87-transition-probability"><span class="nav-number">3.3.</span> <span class="nav-text">转移概率 Transition Probability</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BD%90%E6%AC%A1%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E9%93%BE-homogeneous-markov-chain"><span class="nav-number">3.4.</span> <span class="nav-text">齐次马尔可夫链 Homogeneous Markov Chain</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9A%8F%E6%9C%BA%E6%B8%B8%E8%B5%B0-random-walk"><span class="nav-number">4.</span> <span class="nav-text">随机游走 Random Walk</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE-graph"><span class="nav-number">4.1.</span> <span class="nav-text">图 Graph</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%A6degree"><span class="nav-number">4.2.</span> <span class="nav-text">度Degree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84path"><span class="nav-number">4.3.</span> <span class="nav-text">路径Path</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9E%E9%80%9A%E5%88%86%E9%87%8F-connected-component"><span class="nav-number">4.4.</span> <span class="nav-text">连通分量 Connected Component</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E7%9A%84%E8%A1%A8%E7%A4%BA%E6%96%B9%E6%B3%95"><span class="nav-number">4.5.</span> <span class="nav-text">图的表示方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E7%8E%87%E8%BD%AC%E7%A7%BB%E7%9F%A9%E9%98%B5-probability-transition-matrix"><span class="nav-number">4.6.</span> <span class="nav-text">概率转移矩阵 Probability Transition Matrix</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B9%B3%E7%A8%B3%E5%88%86%E5%B8%83stationary-distribution"><span class="nav-number">5.</span> <span class="nav-text">平稳分布Stationary Distribution</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%88%86%E5%B8%83-state-distribution"><span class="nav-number">5.1.</span> <span class="nav-text">状态分布 State Distribution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B3%E7%A8%B3%E5%88%86%E5%B8%83-stationary-distribution"><span class="nav-number">5.2.</span> <span class="nav-text">平稳分布 Stationary Distribution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%8F%AF%E7%BA%A6%E6%80%A7-irreducibility"><span class="nav-number">5.3.</span> <span class="nav-text">不可约性 Irreducibility</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8D%E5%91%A8%E6%9C%9F%E6%80%A7-aperiodic"><span class="nav-number">5.4.</span> <span class="nav-text">反周期性 aperiodic</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#pagerank"><span class="nav-number">6.</span> <span class="nav-text">PageRank</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E9%87%8F%E6%96%B9%E7%A8%8B-flow-equation"><span class="nav-number">6.1.</span> <span class="nav-text">流量方程 flow equation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pagerank%E7%AE%97%E6%B3%95"><span class="nav-number">6.2.</span> <span class="nav-text">PageRank算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%9E%E6%94%B6%E6%95%9B%E6%83%85%E5%86%B5"><span class="nav-number">6.3.</span> <span class="nav-text">非收敛情况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95"><span class="nav-number">6.4.</span> <span class="nav-text">解决方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%B6%E6%95%9B%E6%80%A7%E5%88%86%E6%9E%90"><span class="nav-number">6.5.</span> <span class="nav-text">收敛性分析</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">小结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yuxin Li"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Yuxin Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/YuxinLi1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;YuxinLi1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yxleezw@163.com" title="E-Mail → mailto:yxleezw@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuxin Li</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'e213ec0829f4e0d15e1e',
+      clientSecret: '5612bacf3b3c67a684b2103b4d03bc7fe5182a91',
+      repo        : 'blog_comments',
+      owner       : 'YuxinLI1',
+      admin       : ['YuxinLi1'],
+      id          : '52e423b3ee542d12d440ef2a7c856191',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <div style="width:100%;height:100%;position:fixed;top:0;z-index:-1;">
+  	<canvas id="canvas">
+  </div>
+  <script type="text/javascript" src="/js/bg_lines.js"></script>
+</body>
+</html>

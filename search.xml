@@ -1,54 +1,568 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Hello World</title>
-    <url>/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="quick-start">Quick Start</h2>
-<h3 id="create-a-new-post">Create a new post</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="run-server">Run server</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+    <title>Bloom Filter</title>
+    <url>/Bloom-Filter/</url>
+    <content><![CDATA[<h1 id="bloom-filter">Bloom Filter</h1>
+<p>布隆过滤器是一个具有空间性的概率数据结构，通常用来判断一个元素是否存在于一个集合中。</p>
+<h2 id="布隆过滤器的性质">布隆过滤器的性质</h2>
+<ul>
+<li><em>纳伪</em>  False Positive是可能的，对于一个不在布隆过滤器中的元素（事件A: 元素不在布隆过滤器中），可能返回存在（拒绝事件A: 返回存在）</li>
+<li><em>拒真</em>  False Negative是不可能的，如果布隆过滤器返回不存在，那么一定不存在</li>
+</ul>
 <a id="more"></a>
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="generate-static-files">Generate static files</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="deploy-to-remote-sites">Deploy to remote sites</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<h1 id="假设检验的两种错误类型">假设检验的两种错误类型</h1>
+<table>
+<tbody>
+<tr>
+<th rowspan="2" colspan="2">
+</th>
+<th colspan="2">
+真实情况
+</th>
+</tr>
+<tr>
+<td>
+事件A是真实的
+</td>
+<td>
+事件A不是真实的
+</td>
+</tr>
+<tr>
+<th rowspan="2">
+根据研究结果的判断
+</th>
+<td>
+拒绝事件A
+</td>
+<td>
+错误判断<br>False Positive(纳伪,type1-error)
+</td>
+<td>
+正确判断
+</td>
+</tr>
+<tr>
+<td>
+接受事件A
+</td>
+<td>
+正确判断
+</td>
+<td>
+错误判断<br>False Negative(拒真,type2-error)
+</td>
+</tr>
+</tbody>
+</table>
+<h2 id="布隆过滤器的应用">布隆过滤器的应用</h2>
+<ul>
+<li>垃圾邮件分类</li>
+<li>拼写检查</li>
+<li>重复检查/抄袭检验</li>
+<li>减少磁盘I/O次数：使用布隆过滤器查找，以减少磁盘I/O次数</li>
+<li>URL去重：爬取网页时避免爬取相同的URL</li>
+<li>解决缓存穿透问题：缓存穿透是指访问根本不存在的数据，即缓存和存储层都不存在，但是导致每一次访问都要去访问存储层。如果黑客故意大量的访问不存在的数据，会导致每次访问都去访问底层存储区造成缓存和数据库宕机，因此考虑将key加到布隆过滤器中，当黑客访问不存在的缓存时能够迅速做出判断</li>
+</ul>
+<h2 id="实例">实例</h2>
+<p>假设集合S中有 n 个元素，并且有 k 个Hash函数h<sub>1</sub>，h<sub>2</sub>，h<sub>3</sub>，...，h<sub>k</sub>，其值域为{1，2，3，...，m}，最开始，m位的数组中每个比特位都是0.</p>
+<p>以集合{x, y, z}为例，相同颜色的箭头表示一个元素经 k 个Hash函数hash之后的位置，在这里，m=18，k=3.</p>
+<p><img src="Bloom Filter1.png" style="zoom:67%;float: middle;" /></p>
+<p>以一个大小为10，哈希函数个数为3的布隆过滤器为例。定义H(x)为经过三个哈希函数哈希之后得到的哈希值的集合{h<sub>1</sub>(x), h<sub>2</sub>(x), h<sub>3</sub>(x)}.</p>
+<ul>
+<li><p>以10个空比特位初始化</p>
+<p><img src="bf0.png" style="zoom:50%;float: middle;" /></p></li>
+<li><p>插入x<sub>0</sub>，其中H(x<sub>0</sub>)={1, 4, 9}</p>
+<p><img src="bf1.png" style="zoom:50%;float: middle;" /></p></li>
+<li><p>插入x<sub>1</sub>，其中H(x<sub>1</sub>)={4, 5, 8}</p>
+<p><img src="bf2.png" style="zoom:50%;float: middle;" /></p></li>
+<li><p>查询</p>
+<ul>
+<li>H(y<sub>0</sub>)={4, 5, 8}，存在</li>
+<li>H(y<sub>1</sub>)={0, 4, 8}，不存在(位置0不为1)</li>
+<li>H(y<sub>2</sub>)={1, 5, 8}，存在（False Positive）</li>
+</ul></li>
+</ul>
+<h1 id="纳伪率-false-positive-rate">纳伪率 False Positive Rate</h1>
+<p>插入一个元素时，经一次hash后某一位没有被置为1的概率为 <span class="math display">\[
+1-\dfrac{1}{m}
+\]</span> 经过 k 次hash之后，该位仍没有被置为1的概率为 <span class="math display">\[
+\left(1-\dfrac{1}{m}\right)^k
+\]</span> 插入 n 个元素后，该位仍为0 的概率为 <span class="math display">\[
+\left(1-\dfrac{1}{m}\right)^{kn}
+\]</span> 所以，该位为1的概率为 <span class="math display">\[
+1-\left(1-\dfrac{1}{m}\right)^{kn}
+\]</span> 对于测试集中的一个元素，如果经过 k 次 hash 之后每一位在布隆过滤器中都为1，则认为该元素存在于布隆过滤器中。因此，发生False Positive的概率为 <span class="math display">\[
+f = \left(1-\left(1-\dfrac{1}{m}\right)^{kn}\right)^k \approx \left(1-e^{-\frac{kn}{m}}\right)^k
+\]</span></p>
+<ul>
+<li>纳伪率随着布隆过滤器大小m的增大而减小</li>
+<li>随着插入的元素数量n的增大而增大</li>
+</ul>
+<h2 id="哈希函数个数的选择">哈希函数个数的选择</h2>
+<p>对于给定的 m 和 n，我们通过选择一个合适的 k 来最小化纳伪率。令 <span class="math inline">\(\rho=e^{-kn/m}\)</span>，则 <span class="math display">\[
+\begin{align*}
+f &amp;\approx (1-e^{-kn/m})^k \\
+&amp;= (1-\rho)^k\\
+&amp;= e^{k\ln(1-\rho)}
+\end{align*}
+\]</span> 现在我们要最小化 <span class="math inline">\(g = kln(1-\rho)\)</span>，记 <span class="math inline">\(ln \rho = ln e^{-kn/m} = -\frac{kn}{m}\)</span>，则 <span class="math display">\[
+g = k \ln(1-\rho) = -\dfrac{m}{n}\ln(\rho)\ln(1-\rho)
+\]</span> 因此，当 <span class="math inline">\(\rho = \dfrac{1}{2}\)</span> 时，g 取最小值，此时 <span class="math display">\[
+\rho = e^{-kn/m} = \dfrac{1}{2}\\
+k = \ln2 \cdot (\frac{m}{n})\\
+f = (1-\rho)^k = \left(\frac{1}{2}\right)^k \approx (0.6185)^{\frac{m}{n}}
+\]</span> 此时我们认为此时的布隆过滤器处于最优状态，注意到 <span class="math inline">\(\rho\)</span> 也是位数组中某一位为0 的概率，这表明想要保持较低误判率，位数组中最好有一半的位置为空，称为<strong>半满布隆过滤器 half-full Bloom Filter</strong>.</p>
+<p><strong>?为什么是半满的布隆过滤器</strong></p>
+<ul>
+<li>如果布隆过滤器中的空值太少，那么发生碰撞的概率会增高</li>
+<li>如果空值太多，说明选择的Hash Function数量太少，因此也会使得碰撞的概率增加，毕竟多个Hash Function都碰撞的概率要比一个Hash Function发生碰撞的概率要低得多</li>
+</ul>
+<h2 id="位数组大小的设置">位数组大小的设置</h2>
+<p>考虑在不超过一定误判率 <span class="math inline">\(\epsilon\)</span> 的情况下，布隆过滤器至少需要多少位m才能表示全集N中任意包含n个元素的子集？</p>
+<p>对于一个布隆过滤器，除需要容纳 n 个元素之外，还需要容纳至少 <span class="math inline">\(\epsilon\)</span>(N-n) 个误判元素。那么对于一个确定容量的位数组，它共需要接受 <span class="math inline">\(n+\epsilon (N-n)\)</span> 个元素。所以一个确定容量的位数组可以表示 <span class="math display">\[
+{n+\epsilon(N-n) \choose n}
+\]</span> 个集合。而容量为 m 的位数组共有 <span class="math inline">\(2^m\)</span> 个不同的组合，进一步地，m位的位数组可以表示 <span class="math display">\[
+2^m {n+\epsilon(N-n) \choose n} \qquad \text{不甚明白？为什么要乘起来？}
+\]</span> 个集合。</p>
+<blockquote>
+<p><span class="math inline">\({n+\epsilon(N-n) \choose n}\)</span> 表示一个内容确定的位数组可以表示的已插入布隆过滤器的元素集合的种类数量，<span class="math inline">\(2^m\)</span>表示一个m为的位数组可以表示的确定的位数组的个数，因此两者乘积即表示一个m位的位数组可以表示的元素集合的数量.</p>
+</blockquote>
+<p>全集中 n 个元素的集合共有 <span class="math display">\[
+{N \choose n}
+\]</span> 个，因此，要让容量位 m 位的位数组能够表示所有包含 n 个元素的子集，必须满足以下不等式 <span class="math display">\[
+2^m {n+\epsilon(N-n) \choose n} \geqslant {N \choose n}
+\]</span> 当 <span class="math inline">\(n \ll \epsilon N\)</span> 时，上式近似为 <span class="math display">\[
+m \geqslant \log_2 \dfrac{ {N \choose n} }{ {n+\epsilon (N-n) \choose n} } \approx \log_2 \dfrac{ {N \choose n} }{ {\epsilon N \choose n} } \geqslant \log_2 \epsilon^{-n} = -n\log_2 \epsilon
+\]</span></p>
+<ul>
+<li>结论一：在错误率不大于 <span class="math inline">\(\epsilon\)</span> 的情况下，m 至少等于 <span class="math inline">\(-nlog_2 \epsilon\)</span> 才能表示任意包含 n 个元素的子集</li>
+</ul>
+<p>进一步考虑，在采用最优哈希函数个数的情况下位数组的大小，令 <span class="math inline">\(f \leqslant \epsilon\)</span>，即 <span class="math display">\[
+f \approx (1-e^{-kn/m})^k = (1-\rho)^k = \left(\dfrac{1}{2}\right)^{\frac{m}{n}ln2} \leqslant \epsilon \\
+m \geqslant -\dfrac{n \ln \epsilon}{(\ln 2)^2} \quad or \quad m \geqslant -\dfrac{n\log_2 \epsilon}{\ln 2} \approx -1.44n\log_2 \epsilon
+\]</span></p>
+<ul>
+<li>结论二：若采用最优哈希函数的个数，那么位数组大小 m 应该是 <span class="math inline">\(-n \log_2 \epsilon\)</span> 的1.44倍</li>
+</ul>
+<h2 id="总结">总结</h2>
+<p>可以根据以下两个公式来选择哈希函数的个数 k 和位数组的大小 m： <span class="math display">\[
+m = -\dfrac{n \ln \epsilon}{(\ln 2)^2} \quad \left(\text{or} \quad m = -\dfrac{n\log_2 \epsilon}{\ln 2} \approx -1.44n\log_2 \epsilon\right)
+\]</span></p>
+<p><span class="math display">\[
+k = \frac{m}{n} \ln 2
+\]</span></p>
 ]]></content>
       <categories>
-        <category>test</category>
+        <category>Algorithm</category>
       </categories>
       <tags>
-        <tag>tag1</tag>
+        <tag>Algorithm</tag>
+        <tag>Bloom Filter</tag>
       </tags>
   </entry>
   <entry>
-    <title>index</title>
-    <url>/index/</url>
-    <content><![CDATA[<p><span class="math display">\[\begin{align}
-a &amp;= b + c  \\
-x &amp;= yz\\
-l &amp;= m - n
-\end{align}\]</span></p>
+    <title>Github Pages + Hexo Next搭建个人博客</title>
+    <url>/Github-Pages-Hexo-Next%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/</url>
+    <content><![CDATA[<p>过几天再写 &gt;_&lt; <a id="more"></a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>Locality Sensitive Hashing</title>
+    <url>/Locality-Sensitive-Hashing/</url>
+    <content><![CDATA[<p>在文本冗余检测问题中，会面临海量数据和高维数据的挑战，学工界提出的技术大致有<strong>最近邻查找(Nearest Neighbor, NN)</strong>或者<strong>近似最近邻查找(Approximate Nearest Neighbor, ANN)</strong>. 而<strong>局部敏感哈希(LSH)</strong>就是ANN中广泛运用的技术，它是采用哈希技术实现对海量高维数据进行近似最近邻快速查找的一种方法.</p>
+<a id="more"></a>
+<h1 id="距离测量">距离测量</h1>
+<p>目标：在高维空间中寻找最近邻，通常使用Jaccard距离和Jaccard相似度来描述.</p>
+<h2 id="jaccard相似度-jaccard-similarity">Jaccard相似度 Jaccard Similarity</h2>
+<p>Jaccard相似度定义为两个集合的交集除以这两个集合的并集. <span class="math display">\[
+sim(A,B)=\dfrac{|A \cap B|}{|A \cup B|}
+\]</span></p>
+<h2 id="jaccard距离-jaccard-distance">Jaccard距离 Jaccard Distance</h2>
+<p>Jaccard距离满足非负性、对称性、三角不等式. <span class="math display">\[
+d(A,B)=1-\dfrac{|A \cap B|}{|A \cup B|}
+\]</span></p>
+<h1 id="文档相似性分析">文档相似性分析</h1>
+<p>目标：给定大量的文档，找到相似的文档.</p>
+<p><strong>应用</strong></p>
+<ul>
+<li>镜像网站或可能镜像的网站的检测</li>
+<li>新闻分析中发现相似性文章</li>
+</ul>
+<p><strong>存在的问题</strong></p>
+<ul>
+<li>相同内容的文章，但是内部文档片段的顺序可能不同</li>
+<li>需要比较的文档对太多</li>
+<li>文档太大或太多导致无法一次性加载进内存</li>
+</ul>
+<h2 id="lsh给出的解决方案">LSH给出的解决方案</h2>
+<p>LSH使得原始数据空间中两个相邻的数据点经过哈希后，在映射的数据空间中的位置仍然相近，反之则相反. 整个LSH过程可以分为两个阶段</p>
+<ul>
+<li>阶段一：离线建立索引
+<ul>
+<li>选择满足要求的哈希函数</li>
+<li>根据要求的准确率，确定哈希表个数和构建每个表的哈希函数个数</li>
+<li>通过哈希函数构建哈希表</li>
+</ul></li>
+<li>阶段二：在线查找
+<ul>
+<li>将要查询的数据经哈希函数映射到相应的bucket中</li>
+<li>计算要查询数据与bucket中数据的距离或相似度</li>
+</ul></li>
+</ul>
+<h2 id="哈希函数的选择要求">哈希函数的选择要求</h2>
+<p>令 d<sub>1</sub> 和 d<sub>2</sub> 是在某一距离度量 D 下的两个距离阈值，且 <span class="math inline">\(d_1 \lt d_2\)</span>，那么LSH采用的哈希函数要满足以下两个要求：</p>
+<ul>
+<li>如果<span class="math inline">\(D(\mathbf{x},\mathbf{y}) \leqslant d_1\)</span>，则<span class="math inline">\(h(x)=h(y)\)</span>的概率至少为 p<sub>1</sub>，即<span class="math inline">\(P(h(\mathbf{x})=h(\mathbf{y}))\geqslant p_1\)</span>;</li>
+<li>如果<span class="math inline">\(D(\mathbf{x},\mathbf{y})\geqslant d_2\)</span>，则<span class="math inline">\(h(x)=h(y)\)</span>的概率至多为 p<sub>2</sub>，即<span class="math inline">\(P(h(\mathbf{x})=h(\mathbf{y}))\leqslant p_2\)</span>.</li>
+</ul>
+<p><strong>常用距离度量</strong></p>
+<ul>
+<li>Jaccard距离度量</li>
+<li>Hamming距离度量</li>
+<li>Consine距离度量</li>
+<li>Normal Euclidean距离度量</li>
+</ul>
+<h2 id="lsh的三个核心步骤">LSH的三个核心步骤</h2>
+<p><img src="lsh.png" style="zoom: 33%;float: middle;" /></p>
+<ul>
+<li><strong>Shingling</strong>  将文本转化为集合，进而将集合转化为布尔向量</li>
+<li><strong>Minhashing</strong>  将布尔向量转化为数字签名，并且签名间保持原来文档间的相似度</li>
+<li><strong>Locality-Sensitive Hashing</strong>  筛选和寻找相似文档候选对</li>
+</ul>
+<h1 id="shingling">Shingling</h1>
+<p>Shingling的中文意思是“瓦片”，想象一下屋顶上的瓦片，总是上一片瓦片的尾部会盖在下一片瓦片的头部，对于一个文档集，以abcdef为例，假设3个字符表示为一个shingling，那么这个文档可以由abc，bcd，cde，def这四个“瓦片”组成，且前一个“瓦片”的尾部是后一个“瓦片”的头部.</p>
+<p><img src="shingling.webp" style="zoom: 70%;float: middle;" /></p>
+<p><img src="3-shingling.png" style="zoom:100%;float: middle;" /></p>
+<center>
+3-shingling
+</center>
+<p>Shingling是NLP中常用的衡量两个文档相似度的技术. 将一篇文档视为一个字符串，文档的 <strong>k-shingling(or k-gram)</strong> 定义为其中任意长度为 k 的子字符串. 假设一个文档D的内容是abcbc，则其2-shingling组成的包为S(D)={ab,bc,cb,bc}，去掉重复元素后即为文档D的2-shingling集合为S(D)={ab,bc,cb}.</p>
+<p>k 值的选取会对最终结果产生很大影响，k选取太小比如1，会导致文档中包含大量常用字，因此会得到很多Jaccard相似度很高的文档对；如果k太大，会导致每篇文档只有很少的k-shingling存在交集，使得几乎所有文档相似度都为0.</p>
+<p>得到k-shingling后可以通过Jaccard相似度对两片文档进行测量，但是由于每篇文档的k-shingling集合都非常大，因此会消耗很大的内存和计算时间. 此时，可以通过哈希函数将将文档集合表征为文档集的特征矩阵，其中矩阵的列对应于文档，行对应于k-shingling元素映射后的编号.</p>
+<p><img src="shingling.png" style="zoom: 50%;float: middle;" /></p>
+<p>其中每一列表示一个文档的数字签名Signature，可以通过比较文档的数字签名来判断两篇文档是否相似，数字签名相似的两片文档通常也是相似的. 到此为止，需要注意的两个问题是：</p>
+<ul>
+<li>尽管文档的数字签名相比于文档的k-shingling集合已经变小了，但可能对于实际计算来说也还是很大，因此可能会造成较大的内存开销和消耗较多的计算资源，所以我们需要之后的Minhashing和LSH来继续优化</li>
+<li>这种方法可能会同时带来False Positive 和False Negative</li>
+</ul>
+<h1 id="min-hashing">Min-hashing</h1>
+<p>对于经过Shingling之后得到的数字签名，我们需要继续通过Hash来减小其大小，因此，我们需要选取一个合适的哈希函数，以使得</p>
+<ul>
+<li>经过哈希之后的签名矩阵能够放在内存中</li>
+<li>sim(C<sub>1</sub>, C<sub>2</sub>) 和 sim(h(C<sub>1</sub>), h(C<sub>2</sub>))应该是几乎相等的</li>
+</ul>
+<p>显然，哈希函数的选取依赖于距离测量方法，不是所有的距离测量方法都能找到一个合适的哈希函数. 在这里我们采取Jaccrad距离测量方法，对于Jaccard距离测量，有一个适合它的Hash函数：Min-Hashing.</p>
+<p><strong>随机排列 Random Permutation</strong></p>
+<ul>
+<li>随机排列是对集合中元素顺序的随机排列</li>
+<li>洗牌就是一个很好的例子</li>
+</ul>
+<h2 id="定义">定义</h2>
+<p>假设布尔矩阵以随机排列 <span class="math inline">\(\pi\)</span> 进行排列，定义“哈希”函数 <span class="math inline">\(h_\pi =\)</span>列 C 在随机排列 $$ 下首次出现 1 的单元的下标 <span class="math display">\[
+h_\pi(C)=\min_{\pi} \pi(C)
+\]</span> 然后使用几个相互独立的哈希函数（也就是随机排列）生成一个列的签名.</p>
+<h2 id="实例">实例</h2>
+<p><img src="minhashing.png" style="zoom: 50%;float: middle;" /></p>
+<h2 id="min-hashing-属性">Min-Hashing 属性</h2>
+<p>给定一个随机排列 <span class="math inline">\(\pi\)</span>，我们有 <span class="math display">\[
+P(h_\pi(C_1) = h_\pi(C_2)) = sim(C_1,C_2)
+\]</span> <strong>Proof</strong></p>
+<p>定义 <span class="math inline">\(\pi(C_1)_k\)</span> 表示文档 C<sub>1</sub> 在随机排列 <span class="math inline">\(\pi\)</span> 下在下标为 k 处的单元首次取得1，定义 <span class="math inline">\(\pi(C_2)_k\)</span> 表示文档 C<sub>2</sub> 在随机排列 <span class="math inline">\(\pi\)</span> 下在下标 k 处的单元首次取得1. 对于文档C<sub>1</sub>和文档C<sub>2</sub>，其Min-Hashing对 <span class="math inline">\((\pi(C_1)_k),\pi(C_2)_k)\)</span> 共有四种可能，即(1,1)，(1,0)，(0,1)，(0,0)，分别记每种可能出现的次数为a，b，c，d，即 <span class="math display">\[
+\begin{align*}
+(\pi(C_1)_k),\pi(C_2)_k) = 
+\left\{
+\begin{array}{**lr**}
+(1,1) &amp; \text{a times} \\
+(1,0) &amp; \text{b times} \\
+(0,1) &amp; \text{c times} \\
+(0,0) &amp; \text{d times}
+\end{array}
+\right.
+\end{align*}
+\]</span> 那么，文档C<sub>1</sub>和C<sub>2</sub>的Jaccard相似度可以表示为 <span class="math display">\[
+sim(C_1,C_2) = \dfrac{a}{a+b+c}
+\]</span> 对于Min-Hashing，当 <span class="math inline">\(\pi(C_1)_k\)</span> 和 <span class="math inline">\(\pi(C_2)_k\)</span> 不都为1时会继续增加 k，直到为1，那么 <span class="math inline">\(h_\pi(C_1) = h_\pi(C_2)\)</span> 的情况就是二者同时为1，即<span class="math inline">\((\pi(C_1)_k),\pi(C_2)_k) =(1,1)\)</span> 的情况，这种情况的可能性为 <span class="math display">\[
+P(h_\pi(C_1) = h_\pi(C_2)) = \dfrac{a}{a+b+c}
+\]</span> 因此 <span class="math display">\[
+P(h_\pi(C_1) = h_\pi(C_2)) = sim(C_1,C_2)
+\]</span></p>
+<h2 id="减小签名矩阵大小">减小签名矩阵大小</h2>
+<p>假设一个文档的长度为 m，即需要 m bits来存储其布尔矩阵，那么对于单个 Min-Hashing 值，需要 <span class="math inline">\(\log_2 m\)</span> bits来存储，假设一个文档需要使用 k 个Min-Hashing函数，那么该文档经过Min-Hashing后的签名矩阵大小为 <span class="math inline">\(k \log_2 m\)</span>，那么文档大小变为了原来的 <span class="math display">\[
+\dfrac{k \log_2 m}{m}
+\]</span> 对于 m = 1 billion，k = 100，该值为 2.98×10<sup>-6</sup>，可以看到Min-Hashing明显地减小了文档签名矩阵长度，减少了内存消耗.</p>
+<p>虽然使用最小哈希签名矩阵明显减少了数据规模，但当哈希函数个数较少时会使得估算误差增大；哈希函数太多又会增加计算量. 因此，需要选择适当数量的哈希函数.</p>
+<h1 id="基于-min-hashing-的lsh-过程">基于 Min-Hashing 的LSH 过程</h1>
+<p>一旦得到一个最小哈希签名矩阵，可以运用条块化的方式实现LSH. 将签名矩阵划分为 b 个行条(band)，每个行条包括 r 行(raw). 对于每个行条，都存在一个哈希函数能够将一个行条中的一列数据（r 个整数向量）映射到一个桶中. 通常，对不同的行条采用不同的哈希函数，这样，即便是不同行条的同一列也大概率不会被映射到同一个桶中. 最终，任意两个集合只要至少一次被映射到同一个桶中，就被认为是一对<strong>候选相似组合</strong>.</p>
+<p><img src="lsh2.png" style="zoom:90%;float: middle;" /></p>
+<p>现在分析两个集合被映射到同一个桶中的概率与Jaccard 相似度 s 之间的关系：</p>
+<ul>
+<li><p>两个不同的min-hashing 签名相等的概率为 s</p></li>
+<li><p>在某个具体行条中，这对集合所有的最小哈希值都相等的概率为 s<sup>r</sup></p></li>
+<li><p>在某个具体行条中，这对集合至少有一对最小哈希值不相等的概率为 1-s<sup>r</sup></p></li>
+<li><p>在任何一个行条中，这对集合都至少有一对最小哈希值不相等的概率为 (1-s<sup>r</sup>)<sup>b</sup></p></li>
+<li><p>在整个签名矩阵中，这对集合至少有一个行条中任意一对最小哈希值都相等的概率为 1-(1-s<sup>r</sup>)<sup>b</sup></p></li>
+<li><p>因此，这对集合至少有一次被哈希到同一个桶中的概率为</p>
+<center>
+<p><b>1-(1-s<sup>r</sup>)<sup>b</sup></b></p>
+</center></li>
+</ul>
+<p><strong>例</strong></p>
+<p>假设文档C<sub>1</sub>和文档C<sub>2</sub>的相似度为0.8，且b=20，r=5，那么这两个集合至少有一次被哈希到同一个桶中的概率为 <span class="math display">\[
+1-(1-0.8^5)^{20} = 0.999644
+\]</span> 假设文档C<sub>1</sub>和文档C<sub>2</sub>的相似度为0.3，且b=20，r=5，那么这两个集合至少有一次被哈希到同一个桶中的概率为 <span class="math display">\[
+1-(1-0.3^5)^{20} = 0.047494
+\]</span> 可以看到相似度高的文档被哈希到一个桶中的概率也很高，相似度低的文档被哈希到同一个桶中的概率也比较低.</p>
+<p><img src="lsh r=5 b=10.png" style="zoom: 100%;float: middle;" /></p>
+<p>我们所需要做的事情就是不断地调整 b 和 r 以使得False Positive 和 False Negative 都比较小.</p>
+<h2 id="应用场景">应用场景</h2>
+<ul>
+<li>音频、图像检索：先对音频、图像构建LSH，依据LSH结果快速找到与之类似的其他对象</li>
+<li>聚类：以样本经过LSH的结果作为特征，并将LSH结果相同或相近的样本归为一类</li>
+<li>冗余检测：检测互联网中网页的相似度</li>
+</ul>
+<h2 id="不足">不足</h2>
+<p>LSH最然检索速度很快，但是算法的空间复杂度高. 因为想要达到较好的性能，需要建立多张哈希表.</p>
+<p>绘图代码：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> scipy.integrate <span class="keyword">as</span> sci</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> matplotlib</span><br><span class="line"><span class="keyword">from</span> matplotlib.patches <span class="keyword">import</span> Polygon</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">f</span>(<span class="params">x,r,b</span>):</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>-(<span class="number">1</span>-x**r)**b</span><br><span class="line"></span><br><span class="line">r = <span class="number">5</span></span><br><span class="line">b = <span class="number">10</span></span><br><span class="line">s = <span class="number">0.55</span></span><br><span class="line"></span><br><span class="line">x=np.linspace(<span class="number">0</span>,<span class="number">1</span>,<span class="number">1000</span>)</span><br><span class="line">y=f(x,r,b)</span><br><span class="line"></span><br><span class="line">fig,ax=plt.subplots(figsize=(<span class="number">7</span>,<span class="number">7</span>))</span><br><span class="line">plt.plot(x,y,<span class="string">&#x27;b&#x27;</span>,linewidth=<span class="number">3</span>,color=<span class="string">&#x27;gold&#x27;</span>)</span><br><span class="line">plt.ylim(ymin=<span class="number">0</span>,ymax=<span class="number">1</span>)</span><br><span class="line">plt.xlim(xmin=<span class="number">0</span>,xmax=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">Ix=np.linspace(<span class="number">0</span>,s,<span class="number">500</span>)</span><br><span class="line">Iy=f(Ix,r,b)</span><br><span class="line">verts=[(<span class="number">0</span>,<span class="number">0</span>)]+<span class="built_in">list</span>(<span class="built_in">zip</span>(Ix,Iy))+[(s,<span class="number">0</span>)]</span><br><span class="line">poly=Polygon(verts,alpha=<span class="number">0.3</span>,color=<span class="string">&quot;deepskyblue&quot;</span>)</span><br><span class="line">ax.add_patch(poly)</span><br><span class="line"></span><br><span class="line">Ix1=np.linspace(s,<span class="number">1</span>,<span class="number">500</span>)</span><br><span class="line">Iy1=f(Ix1,r,b)</span><br><span class="line">verts=[(s,<span class="number">1</span>)]+<span class="built_in">list</span>(<span class="built_in">zip</span>(Ix1,Iy1))+[(<span class="number">1</span>,<span class="number">1</span>)]</span><br><span class="line">poly=Polygon(verts,alpha=<span class="number">0.3</span>,color=<span class="string">&#x27;lime&#x27;</span>)</span><br><span class="line">ax.add_patch(poly)</span><br><span class="line"></span><br><span class="line">plt.grid()</span><br><span class="line">plt.savefig(<span class="string">&#x27;lsh.png&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>test</category>
+        <category>Algorithm</category>
       </categories>
       <tags>
-        <tag>tag1</tag>
+        <tag>Algorithm</tag>
+        <tag>hash</tag>
+        <tag>LSH</tag>
       </tags>
   </entry>
   <entry>
-    <title>测试</title>
-    <url>/%E6%B5%8B%E8%AF%95/</url>
-    <content><![CDATA[<h1 id="hashing">Hashing</h1>
-<h2 id="介绍">介绍</h2>
+    <title>Morris Counting Algorithm</title>
+    <url>/Morris-Counting-Algorithm/</url>
+    <content><![CDATA[<h1 id="描述">描述</h1>
+<p>假设我们在网络中有一路由器，它需要根据分组的源和目的地来存储分组的信息。我们想要利用通过路由器的信息来计算某些统计量，比如同一个源IP地址发送了多少次请求。当发生分布式拒绝服务攻击(Distribution Denial of Service, DDoS)时，指向某个目的地址的流量会急剧增加，但是网络交换设备的存储和计算资源十分稀缺，因此当整数n十分大时，怎样才能用更少的空间来近似表示整数n呢？</p>
+<a id="more"></a>
+<p>通过路由器的信息量要远比路由器可用的存储容量多，因此我们不能仅仅简单的存储通过路由器的信息的副本，然后根据这些副本来计算。</p>
+<p>为了解决这样的问题，我们放松要求，不再使用精确值而是使用估计值来表示。为了使这些估计值能够正常被使用，因此我们需要对估计值有一些条件约束，通常我们需保证：</p>
+<center>
+真实值 ≤ 估计值 ≤ α·真实值
+</center>
+<p>通常，<span class="math inline">\(\alpha = 1 + \epsilon\)</span>，<span class="math inline">\(\epsilon\)</span>是一个非常小的数，且<span class="math inline">\(\epsilon\)</span>越小，估计值越接近真实值。并且需要上式在 <span class="math inline">\(1-\delta\)</span> 的概率内成立，其中<span class="math inline">\(\delta\)</span>是一个非常小的数。</p>
+<p>该算法必须监视一系列的事件，并在任何时间给出该系列事件的估计数量，该算法有两种操作：</p>
+<ul>
+<li>update(): 让n增加1</li>
+<li>输出估计值n</li>
+</ul>
+<h1 id="morris-algorithm-1978">Morris Algorithm 1978</h1>
+<hr />
+<ol type="1">
+<li>initialize X <span class="math inline">\(\leftarrow\)</span> 0</li>
+<li>for each update, increment X with probability <span class="math inline">\(\frac{1}{2^X}\)</span></li>
+<li>for a query, output <span class="math inline">\(\hat{n} = 2^X -1\)</span></li>
+</ol>
+<hr />
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">input</th>
+<th style="text-align: center;">True</th>
+<th style="text-align: center;">Probability</th>
+<th style="text-align: center;">X</th>
+<th style="text-align: center;">Estimator</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"></td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{1}{2}\)</span></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{1}{2}\)</span></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{1}{4}\)</span></td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{1}{4}\)</span></td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{1}{4}\)</span></td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{1}{4}\)</span></td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">7</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{1}{8}\)</span></td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">8</td>
+<td style="text-align: center;"><span class="math inline">\(\frac{1}{8}\)</span></td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">7</td>
+</tr>
+</tbody>
+</table>
+<center>
+Morris算法运行过程
+</center>
+<h2 id="analysis">Analysis</h2>
+<p>Let X<sub>N</sub> denote X in Morris' algorithm after N updates. Then, we have <span class="math display">\[
+E[2^{X_N}] = N + 1
+\]</span> <em>Proof</em> <span class="math display">\[
+\begin{align*}
+E[2^{X_{N+1}}] &amp;= \sum_{j\geqslant1}P(X_N=j)E[2^{X_{N+1}}|X_N=j] &amp; \text{全期望定理}\\
+&amp;= \sum_{j\geqslant 1} P(X_N=j)(2^{j+1} \cdot \frac{1}{2^j} + 2^j \cdot (1-\frac{1}{2^j})) &amp; \text{$X_{N+1}$有$\frac{1}{2^j}$的概率等于$j+1$} \\
+&amp;= \sum_{j\geqslant1}P(X_N=j)\cdot 2^j + \sum_{j\geqslant 1}P(X_N=j) &amp; \text{$E[2^{X_N}]=\sum_{j\geqslant 1}P(X_N=j)\cdot 2^j$} \\
+&amp;= E[2^{X_N}] + 1
+\end{align*}
+\]</span> 归纳可得， <span class="math display">\[
+E[2^{X_N}]=N + 1
+\]</span> 因此有<span class="math inline">\(E[2^{X_N} - 1] = N\)</span>，所以 <span class="math inline">\(2^{X_N}-1\)</span> 是N的一个无偏估计。尽管无偏性是 Morris Algorithm很好的一个性质，但是无偏性不是评价一个估计值好坏的唯一标准。运用Morris Algorithm中的计数器X去估计真实值N是很敏感的，因此需要进一步刻画真实计数N估计值的波动情况，即估计值的方差<span class="math inline">\(Var(2^{X_N}-1)=Var(2^{X_N})\)</span>. <span class="math display">\[
+\begin{align*}
+Var(2^{X_N}) &amp;= E[(2^{X_N})^2]-(E[2^{X_N}])^2 \\
+&amp;= E[2^{2X_N}]-(N+1)^2\\
+E[2^{2x_N}] &amp;= \sum_{i\geqslant 1} 2^{2i} P(X_N = i) \\
+&amp;= \sum_{i \geqslant 1} 2^{2i} \left( \dfrac{1}{2^{i-1}}P(X_{N-1}=i-1) + (1-\dfrac{1}{2^i}) P(X_{N-1}=i) \right) &amp; \text{全概率公式} \\
+&amp;= \sum_{i \geqslant 1}2^{i+1}P(X_{N-1}=i-1) + \sum_{i \geqslant 1}2^{2i}P(X_{N-1}=i) -\sum_{i \geqslant 1}2^i P(X_{N-1}=i) \\
+&amp;= 4\sum_{i \geqslant 1}2^{i-1}P(X_{N-1}=i-1) + E[2^{2X_{N-1}}]-E[2^{X_{N-1}}] \\
+&amp;= 4E[2^{X_{N-1}}] + E[2^{2X_{N-1}}]-E[2^{X_{N-1}}] \\
+&amp;= E[2^{2X_{N-1}}]+3E[2^{X_{N-1}}]
+\end{align*}
+\]</span> 由于<span class="math inline">\(E[2^{2x_0}]=1\)</span>，使用数学归纳法可得 <span class="math display">\[
+E[2^{2X_N}]=3\sum_{i=0}^{N-1}E[2^{X_i}]+1
+\]</span> 因此， <span class="math display">\[
+E[2^{2X_N}] = \dfrac{3N(N+1)}{2} + 1
+\]</span> 所以 <span class="math display">\[
+Var(2^{X_N}) = \dfrac{1}{2}(N^2-N) \sim O(N^2)
+\]</span> 即Morris Algorithm随着计数N的增大其方差也在增大。其原因在于该算法不是直接估计N，而是估计存储N所需要的位数，即<span class="math inline">\(log_2N\)</span>，当估计值比真实值小1时，估计的事件发生次数可能仅接近于真实事件发生次数的50%；而当估计值比真实值大1时，估计的事件发生次数是真实发生次数的近2倍。</p>
+<p>对于Morris算法给出的估计值，其切比雪夫界为 <span class="math display">\[
+P(|\hat{N}-N| \gt \epsilon N) \leqslant \dfrac{Var(\hat{N})}{\epsilon^2 N^2} \lt \dfrac{\frac{1}{2}N^2}{\epsilon^2 N^2} = \dfrac{1}{2\epsilon^2}
+\]</span> 这并不好，因为只有当<span class="math inline">\(\epsilon \geqslant 1\)</span>时，<span class="math inline">\(P(|\hat{N} - N| \gt \epsilon N)\)</span>才小于<span class="math inline">\(\dfrac{1}{2}\)</span>。</p>
+<h1 id="morris-algorithm">Morris+ Algorithm</h1>
+<hr />
+<p>Input: 事件流F, <span class="math inline">\(\delta\)</span> 和 <span class="math inline">\(\epsilon\)</span></p>
+<p>Output: 指定事件计数C</p>
+<p><span class="math inline">\(n= \lceil \frac{1}{\delta \epsilon^2} \rceil\)</span>;</p>
+<p>初始化计数数组X[1...n] = 0;</p>
+<p><em>while</em> 事件流F未结束 <em>do</em></p>
+<p>    if 指定事件发生 then</p>
+<p>        for i = 1 to n do</p>
+<p>            以 <span class="math inline">\(\frac{1}{2^{X_i}}\)</span> 的概率更新<span class="math inline">\(X_i= Xi + 1\)</span>;</p>
+<p>for i = 1 to n do</p>
+<p>    <span class="math inline">\(C = C + 2^{X_i} - 1\)</span>;</p>
+<p><span class="math inline">\(C=\frac{C}{n}\)</span>;</p>
+<p>return C;</p>
+<hr />
+<p>根据方差的性质，相对于Morris Algorithm，Morris+算法的方差减小到了<span class="math inline">\(O\left(\dfrac{N^2}{n}\right)\)</span>. 根据Chebyshev不等式，有 <span class="math display">\[
+P(|\hat{N} - N| \gt \epsilon N) \lt \dfrac{Var(\hat{N})}{\epsilon^2 N^2} \lt \dfrac{\frac{N^2}{2n}}{\epsilon^2 N^2} = \dfrac{1}{2n\epsilon^2}
+\]</span> 因此随着次数的增多，估计值围绕真实值的波动会越来越小。令 <span class="math inline">\(\frac{1}{2n\epsilon^2} \lt \delta\)</span>, 即 <span class="math inline">\(n = O\left(\frac{1}{\delta \epsilon^2}\right)\)</span>时， <span class="math display">\[
+P(|\hat{N} - N| \gt \epsilon N) \lt \delta
+\]</span> 表明事件计数的估计值<span class="math inline">\(\hat{N}\)</span>偏离真实值N大于<span class="math inline">\(\epsilon N\)</span>的概率小于<span class="math inline">\(\delta\)</span>, 此时，称<span class="math inline">\(\hat{N}\)</span>为N的<span class="math inline">\((\epsilon, \delta)\)</span>近似估计。</p>
+<h1 id="morris-algorithm-1">Morris++ Algorithm</h1>
+<p>对于Morris+ 算法，需要运行 <span class="math inline">\(O\left(\frac{1}{\delta \epsilon^2}\right)\)</span>次Morris算法，并取平均值可以得到真实计数的<span class="math inline">\((\epsilon,\delta)\)</span>的近似估计。但是，Morris++ 算法只需要运行<span class="math inline">\(O\left(\frac{ln \frac{1}{\delta}}{\epsilon^2}\right)\)</span>次Morris算法，就可以得到真实计数的<span class="math inline">\((\epsilon,\delta)\)</span>近似估计。</p>
+<hr />
+<p>Input: 事件流F, <span class="math inline">\(\delta\)</span> 和 <span class="math inline">\(\epsilon\)</span>;</p>
+<p>Output: 指定事件计数C</p>
+<p><span class="math inline">\(n=\lceil ln \frac{1}{\delta} \rceil, \quad m=\lceil \frac{1}{\epsilon^2} \rceil\)</span>;</p>
+<p>初始化数组X[1...n,1...m] = 0, C[1...n] = 0;</p>
+<p>while 事件流 F 未结束 do</p>
+<p>    if 指定事件发生 then</p>
+<p>        for i = 1 to n do</p>
+<p>            for j = 1 to m do</p>
+<p>                以 <span class="math inline">\(\frac{1}{2^{X_{ij}}}\)</span> 的概率更新 <span class="math inline">\(X_{ij} = X_{ij} + 1\)</span>;</p>
+<p>for i = 1 to n do</p>
+<p>    for j = 1 to m do</p>
+<p>        <span class="math inline">\(C_i = C_i + (2^{X_ij} - 1)\)</span>;</p>
+<p>    <span class="math inline">\(C_i = \frac{1}{m} C_i\)</span>;</p>
+<p><span class="math inline">\(C \leftarrow C[1 ... n]\)</span>的中位数;</p>
+<p>return C;</p>
+<hr />
+<p>Morris+算法给出的输出值是真实值的无偏估计，而且次数越多围绕真实值的波动越小。假设运行多个Morris+算法，算法输出值偏离真实值很大的概率会很小，所以其分布应该如下图所示：</p>
+<p><img src="more_Morris+.png" style="zoom:67%;float: middle;" /></p>
+<p>可以看出，多次Morris+输出的估计值的中位数应该和真实值比较接近，而Morris++算法正是基于这种直觉提出的。</p>
+<p>Morris++算法共运行<span class="math inline">\(n = ln\left(\frac{1}{\delta}\right)\)</span>次Morris+算法，而每次Morris+算法又运行<span class="math inline">\(m = \frac{1}{\epsilon^2}\)</span>次Morris算法。虽然每次Morris+算法可能达不到预期的精度（Morris算法的运行次数少于<span class="math inline">\(O\left(\frac{1}{\delta \epsilon^2}\right)\)</span>次），但是<span class="math inline">\(n = ln\left(\frac{1}{\delta}\right)\)</span>次Morris+算法都是围绕在真实值附近波动，因此这些Morris+算法输出值的中位数可能是一个比较好的估计。</p>
+<p><img src="Morris++.png" style="zoom:67%;float: middle;" /></p>
+<center>
+Morris++算法的Tug of War示意图
+</center>
+<p>那么，为什么运行<span class="math inline">\(n = ln\left(\frac{1}{\delta}\right)\)</span>次Morris+算法就可以输出预期精度的估计值呢？</p>
+<p>假设第 i 次Morris+算法由 m 个Morris算法构成，依据Chebyshev不等式，有 <span class="math display">\[
+P(|\hat{N_i}-N| \gt \epsilon N) \lt \dfrac{1}{2m\epsilon^2}
+\]</span> 其中<span class="math inline">\(\hat{N_i}\)</span>为单次Morris+算法的输出值，而N为事件计数真实值，因此，只要运行<span class="math inline">\(m=O\left(\frac{1}{\epsilon^2}\right)\)</span>次Morris算法，就可以使得<span class="math inline">\(\hat{N_i}\)</span>偏离真实值超过<span class="math inline">\(\epsilon N\)</span>的概率小于<span class="math inline">\(\frac{1}{3}\)</span>.</p>
+<p>针对第 i 次Morris+算法运行结果，定义如下指示变量 <span class="math inline">\(Y_i\)</span>: <span class="math display">\[
+\begin{align*}
+Y_i = 
+\left\{
+\begin{array}{**lr**}
+1, &amp; \text{if $|\frac{1}{n}\sum_{j=1}^{n} \hat{N_{ij}}-N|\gt \epsilon N$;}\\
+0, &amp; \text{otherwise.}
+\end{array}
+\right.
+\end{align*}
+\]</span> Y<sub>i</sub>是一个随机变量，表示了第 i 次Morris+算法运行结果的误差是否符合预期。当<span class="math inline">\(Y_i = 1\)</span>表示第 i 次Morris+算法失败，否则成功。 <span class="math display">\[
+E[Y_i] = P(Y_i = 1) \lt \dfrac{1}{3}, \qquad m = O\left(\frac{1}{\epsilon^2}\right)
+\]</span> 假设运行 t 次Morris+算法，其中至少有一半Morris+算法失败，意味着中位数左边或者右边都是失败的，根据Chernoff不等式可得： <span class="math display">\[
+\begin{align*}
+P(\sum_i Y_i \gt \frac{t}{2}) &amp;= P(\sum_i Y_i \gt (1+\frac{1}{2})\frac{t}{3}) \\
+&amp;\leqslant P(\sum_i Y_i \gt (1+\frac{1}{2})\mu) &amp; \text{Let $\mu \leqslant \frac{t}{3}$} \\
+&amp;\leqslant exp(-\frac{\mu \left(\frac{1}{2}\right)^2}{4}) \lt \delta
+\end{align*}
+\]</span> 又因为 <span class="math inline">\(\mu \leqslant \frac{t}{3}\)</span>，所以 <span class="math display">\[
+e^{-\frac{t}{48}} \leqslant e^{-\frac{\mu \left(\frac{1}{2}\right)^2}{4}} &lt; \delta
+\]</span> 因此，有<span class="math inline">\(t &gt; 48 \ln \frac{1}{\delta}\)</span>，即需要运行<span class="math inline">\(t=O\left(\log \frac{1}{\delta} \right)\)</span>次Morris+算法，根据 t 次结果取中位数，就可以得到符合精度要求的<span class="math inline">\((\epsilon,\delta)\)</span>近似估计。</p>
+<h1 id="tug-of-war">Tug of War</h1>
+<p>如上所述，综合运用Chebyshev不等式和Chernoff不等式得到一个相对紧的概率上界的方法称为Tug of War技术。</p>
+]]></content>
+      <categories>
+        <category>Algorithm</category>
+      </categories>
+      <tags>
+        <tag>Algorithm</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hash</title>
+    <url>/Hash/</url>
+    <content><![CDATA[<h1 id="介绍">介绍</h1>
 <p>在记录的关键字与记录的存储地址之间建立的对应关系叫做Hash函数。Hash函数是一种映射，是从关键字到存储地址之间的映射，它可以使得每个关键字 <span class="math inline">\(key\)</span> 都有唯一的存储位置 <span class="math inline">\(h(key)\)</span> 与之对应，因此一旦建立了这种对应关系，就可以在 <span class="math inline">\(O(1)\)</span> 的时间复杂度找到与关键字匹配的记录所在的存储位置。</p>
-<p>采用Hash技术将记录存储在一块连续的空间中，这块存储空间称为<strong>哈希表 Hash Table</strong>，将关键字与存储位置形成映射的函数称为<strong>Hash 函数</strong>，得到的存储位置称为<strong>Hash 地址</strong>。 <a id="more"></a> <img src="hash table.png" style="zoom:67%;float: middle;" /></p>
+<p>采用Hash技术将记录存储在一块连续的空间中，这块存储空间称为<strong>哈希表 Hash Table</strong>，将关键字与存储位置形成映射的函数称为<strong>Hash 函数</strong>，得到的存储位置称为<strong>Hash 地址</strong>。</p>
+<a id="more"></a>
+<p><img src="hash table.png" style="zoom:67%;float: middle;" /></p>
 <center>
 Hash Table
 </center>
@@ -58,14 +572,14 @@ Hash Table
 取模运算
 </center>
 <p>在Hash函数中，key可以是任意值，整数、字符串、文档、URL等。通过Hash函数可以将任意长度的输入映射为固定的整数也即哈希值Hash value。</p>
-<h2 id="hash函数特点">Hash函数特点</h2>
+<h1 id="hash函数特点">Hash函数特点</h1>
 <ul>
 <li><strong>压缩存储</strong> 可以将长的文档、URL等映射为一个固定大小的整数</li>
 <li><strong>无冲突</strong> 理想状态下，输入不同的关键字会得到不同的哈希值，即使两个差异非常小的关键字，其哈希值也应该是不同的。因此，相同的关键字经由同一个Hash函数hash之后得到的Hash Value也一定是相同的</li>
 <li><strong>不可逆</strong> 在不知道Hash函数的情况下，仅知道Hash Value，不可能轻易地猜到Hash Value对应的关键字，唯一的解决办法是<strong>暴力破解Brute Force</strong></li>
 </ul>
 <p>常用哈希函数介绍<a href="https://zhuanlan.zhihu.com/p/101390996">参考</a></p>
-<h2 id="hash-冲突">Hash 冲突</h2>
+<h1 id="hash-冲突">Hash 冲突</h1>
 <p>在关键字较多的情况下，可能会出现两个不同的关键字被映射到同一个存储位置，因此发生了<strong>Hash冲突 Collision</strong>。</p>
 <p>Hash冲突的解决方法：</p>
 <ul>
@@ -80,12 +594,12 @@ Hash Table
 </ul>
 <p>如果 h 是单射，即对于U中的每一个元素，在R中都有且仅有一个元素与之对应，那么此时称该哈希为<strong>完美哈希Perfect Hashing</strong>；如果 h 是双射，即一一映射，集合U中每一个元素在集合R中都有且仅有一个元素与之对应，且集合R中每一个元素在集合U中也有且只有一个元素与之对应，此时称之为<strong>最小完美哈希Minimal Perfect Hashing</strong>。</p>
 <p>如果集合U预先给定且不再调整，那么称为<strong>静态哈希表Static Hash Table</strong>；如果U是可变化的，称为<strong>动态哈希表Dynamic Hash Table</strong>。</p>
-<h3 id="hash冲突避免">Hash冲突避免</h3>
+<h2 id="hash冲突避免">Hash冲突避免</h2>
 <p>如果Hash Function选择的足够好，并且集合U的大小小于等于R，那么就有可能形成完美哈希。</p>
 <p>对于Static Hash Table，总会有确定性的策略可以找到这样的 h 来达成Minimal Perfect Hashing。</p>
 <p>对于Dynamic Hash Table，由于我们不能预测集合U中元素的分布，因此不能预先设计哈希函数 h 来形成完美哈希。而且由于集合U中元素的不确定性，对于由确定性策略生成的哈希函数 h，总能够生成一个对抗性集合U 使得哈希冲突尽可能的多。因此，必须使用非确定性策略构建哈希函数，才有可能避免哈希冲突。</p>
 <p>我们可以预先准备一组哈希函数，这组哈希函数可以使得相同分布的输入不会产生相同分布的输出，因此针对某一个特定哈希函数的对抗性策略就不会影响其它的哈希函数，所以可以通过随机选取哈希函数来抵抗对抗性策略。</p>
-<h4 id="全域哈希族-universal-hashing">全域哈希族 Universal Hashing</h4>
+<h3 id="全域哈希族-universal-hashing">全域哈希族 Universal Hashing</h3>
 <p><strong>Definition</strong>: 令集合U 为关键字key的集合，集合 <span class="math inline">\(\mathcal{H}\)</span> 是一组有限的哈希函数集合，其中每一个哈希函数为 <span class="math inline">\(h_i : U \rightarrow \{0,1,...,m-1\}\)</span>. 我们称集合 <span class="math inline">\(\mathcal{H}\)</span> 是全域的，如果对于 <span class="math inline">\(\forall v,y \in U\)</span> 并且 <span class="math inline">\(x \neq y\)</span>，都有 $|{h  : h(x) = h(y) }| =  $，即集合 <span class="math inline">\(\mathcal{H}\)</span> 满足将任意两个不等的关键字哈希到同一位置的哈希函数的数量等于集合 <span class="math inline">\(\mathcal{H}\)</span> 的大小除以 m。</p>
 <p><em>自己的理解：假定元素 x 被哈希到了某个位置，现在又来了一个新的元素 y，那么元素 x 和 y 发生碰撞的概率为</em> <span class="math display">\[
 \dfrac{\text{与元素x产生相同哈希值的哈希函数个数}}{\text{集合$\mathcal{H}$中总的哈希函数个数}} = \dfrac{\dfrac{|\mathcal{H}|}{m}}{|\mathcal{H}|} = \dfrac{1}{m}
@@ -95,7 +609,7 @@ Hash Table
 <p><strong>构造</strong>：Carter 和 Wegman最初的做法是选择一个足够大的素数 p，对于有m个槽的哈希表，定义 <span class="math display">\[
 h_{a,b}(x) = ((ax+b) \quad mod \quad p) \quad mod \quad m
 \]</span> 其中a, b是随机选取的 p 的余数，且<span class="math inline">\(a \ne 0\)</span>。所有这样的哈希函数族即为全域哈希族。</p>
-<h3 id="hash冲突解决">Hash冲突解决</h3>
+<h2 id="hash冲突解决">Hash冲突解决</h2>
 <ul>
 <li>开发地址法 Open Addressing
 <ul>
@@ -110,17 +624,17 @@ h_{a,b}(x) = ((ax+b) \quad mod \quad p) \quad mod \quad m
 <li>布谷鸟哈希 Cuckoo Hashing</li>
 <li>建立公共溢出区</li>
 </ul>
-<h4 id="开放地址法-open-addressing">开放地址法 Open Addressing</h4>
+<h3 id="开放地址法-open-addressing">开放地址法 Open Addressing</h3>
 <p>开放地址法也称再散列法，主要思想是：当关键字key的哈希地址<span class="math inline">\(addr = h(key)\)</span>出现冲突时，以addr为基础，产生另外一个哈希地址 addr1，如果addr1再出现冲突，再以addr1为基础产生另一个哈希地址addr2，直到不再产生冲突，然后将相应元素存入其中。</p>
 <p>开放地址法在装填因子（装填因子=已占用槽数/总槽数）较高时性能会急剧下降，为应对这一情况，有时也使用链地址法。</p>
 <p><strong>线性探测法</strong>对缓存友好，性能最高，比较常用，但是可能带来冲突聚集的情况。为了避免这一现象，有时也使用<strong>二次探测法</strong>。二次探测法也会受到对抗性策略干扰，因此有时会结合<strong>双重散列法</strong>配合<strong>全域哈希族</strong>解决该问题。</p>
-<h4 id="线性探测法-linear-probing">线性探测法 Linear probing</h4>
+<h3 id="线性探测法-linear-probing">线性探测法 Linear probing</h3>
 <p><span class="math display">\[
 h(k,i) = (h(k) + d_i) \quad mod \quad m \qquad i=1,2,...,n
 \]</span></p>
 <p>其中h(key)为哈希函数，m为表长，d<sub>i</sub>为增量序列，对于线性探测法，<span class="math inline">\(d_i = 1,2,3,...,m-1\)</span>。</p>
 <p>线性探测法的特点是：冲突发生时，依次顺序查找表中的下一单元，直到找出一个空单元或遍历完所有的单元。其缺点是容易发生冲突聚集。</p>
-<h4 id="二次探测法-quadratic-probing">二次探测法 Quadratic probing</h4>
+<h3 id="二次探测法-quadratic-probing">二次探测法 Quadratic probing</h3>
 <p><span class="math display">\[
 h(k,i) = (h(k)+c_1 i+c_2 i^2) \quad mod \quad m
 \]</span></p>
@@ -138,16 +652,16 @@ h(k,i) = (h(k)+c_1 i+c_2 i^2) \quad mod \quad m
 1,-1,4,-4,9,-9,16,-16,...
 \]</span> 但即便如此，也可能会出现哈希表中有空槽，但是由于跳来跳去而找不到空闲的位置，考虑一个哈希表长度为5，h(k) = k mod 5，插入序列为5，6，7，11，探测序列为1，-1，4，-4，9，-9的情况。</p>
 <p>线性探测很容易聚集，二次探测没那么容易聚集，但也并不是不可能。如果表的大小设计为<strong>4k+3</strong> 的形式，而且是这种形式的素数时，理论上可以证明只要有空位就一定能找到。</p>
-<h4 id="双重散列法-double-hashing">双重散列法 Double Hashing</h4>
+<h3 id="双重散列法-double-hashing">双重散列法 Double Hashing</h3>
 <p><span class="math display">\[
 h(k,i) = (h(k) + i \cdot h_1(k)) \quad mod \quad m
 \]</span></p>
 <p>其探查序列为h(k), h(k) +h<sub>1</sub>(k), h(k)+2h<sub>1</sub>(k),...该方法使用了两个散列函数h(key)和h<sub>1</sub>(key)。</p>
-<h4 id="伪随机探测法-pseudo-random-probing">伪随机探测法 Pseudo Random probing</h4>
+<h3 id="伪随机探测法-pseudo-random-probing">伪随机探测法 Pseudo Random probing</h3>
 <p>增量序列为事先建立一个伪随机数发生器，如 i=(i+p)%m，并给定一个随机数作为起点。当出现冲突时，依次遍历伪随机数数列查找空闲单元。</p>
-<h4 id="链地址法-separate-chaining">链地址法 Separate Chaining</h4>
+<h3 id="链地址法-separate-chaining">链地址法 Separate Chaining</h3>
 <p>基本思想时将所有哈希地址为 i 的元素构成一个称为<strong>同义词链</strong>的单链表，并将单链表的头指针存在哈希表的第 i 个单元中。因此查找、插入、删除都在链表中进行。</p>
-<h5 id="开放地址法与链地址法拉链法对比">开放地址法与链地址法(拉链法)对比</h5>
+<h4 id="开放地址法与链地址法拉链法对比">开放地址法与链地址法(拉链法)对比</h4>
 <p><strong>链地址法的优点</strong></p>
 <ol type="1">
 <li>处理冲突简单，无冲突聚集现象，非同义词不会发生冲突，因此平均查找长度较短</li>
@@ -159,15 +673,15 @@ h(k,i) = (h(k) + i \cdot h_1(k)) \quad mod \quad m
 <ol type="1">
 <li>指针需要额外的空间，因此当节点规模较小时，开放地址法更省空间；而若将节省的指针空间用来扩大哈希表的规模，可以使装填因子变小，又减少了开放地址法中冲突，从而提高查找速度</li>
 </ol>
-<h4 id="two-way-chaining">Two-way Chaining</h4>
+<h3 id="two-way-chaining">Two-way Chaining</h3>
 <blockquote>
 <p><a href="http://hcoona.github.io/Data-Structure/hash-table-summary-and-advanced-topics/">Two-way Chaining</a> 就像是 Double hashing，区别在于 Double hashing 使用一个哈希表，而 Two-way Chaining 使用两个哈希表 T<sub>1</sub>和 T<sub>2</sub>。在插入时，T[h<sub>1</sub>(x)] 和T[h<sub>2</sub>(x)] 中哪个装载的元素更少，就插入到哪儿。查找时需要访问两个哈希表。</p>
 </blockquote>
-<h4 id="再哈希法-rehashing">再哈希法 Rehashing</h4>
+<h3 id="再哈希法-rehashing">再哈希法 Rehashing</h3>
 <p>同时构造多个不同的哈希函数： <span class="math display">\[
 h_i = RH_i(key) \qquad i=1,2,3,...,k
 \]</span> 当哈希地址h<sub>1</sub>=RH<sub>1</sub>(k)发生冲突时，再计算h<sub>i</sub>=RH<sub>i</sub>(k)直到冲突不再产生。这种方法不容易产生聚集，但增加了计算时间。</p>
-<h4 id="布谷鸟哈希-cuckoo-hashing">布谷鸟哈希 Cuckoo Hashing</h4>
+<h3 id="布谷鸟哈希-cuckoo-hashing">布谷鸟哈希 Cuckoo Hashing</h3>
 <p>最早于2001年由<a href="https://www.cs.tau.ac.il/~shanir/advanced-seminar-data-structures-2009/bib/pagh01cuckoo.pdf">Rasmus Pagh和Flemming Friche Rodler</a>提出。为了解决哈希冲突而提出，利用较少的计算换取较大的空间。该哈希方法类似于布谷鸟在别的鸟巢中下蛋，并将别的鸟蛋挤出的行为。具有占用空间小，查询迅速的特性。</p>
 <p>Cuckoo Hashing使用两个Hash Function，存在使用一个Hash Table和使用两个Hash Table两种情况。其算法描述如下：</p>
 <ol type="1">
@@ -179,7 +693,7 @@ h_i = RH_i(key) \qquad i=1,2,3,...,k
 <p>可以看到Cuckoo Hashing的过程可能因为反复踢出无限循环下去，这时候需要对一次循环过程中踢出次数进行限制，超过限制则认为需要增加哈希函数。</p>
 <p>对于两张哈希表的情况：</p>
 <p>假设有两张哈希表A和B，分别对应哈希函数hashA和hashB，对于新到来的关键字key，如果hashA(key).value=key1 且 hashB(key).value=key2，那么任选一个关键字将其踢出。假设选择key1踢出，那么将key放到key1所在单元。对于key1，计算其hashB(key1)，并将其插入到该位置；如果该位置非空，则重复上述过程。其图例可<a href="https://baike.baidu.com/item/Cockoo%20hash/3022855">参考</a></p>
-<h2 id="hash-table-动态大小调整暂略">Hash Table 动态大小调整（暂略）</h2>
+<h1 id="hash-table-动态大小调整暂略">Hash Table 动态大小调整（暂略）</h1>
 <p>主要方法：</p>
 <ul>
 <li>线性哈希表 Linear Hash Table</li>
@@ -189,11 +703,998 @@ h_i = RH_i(key) \qquad i=1,2,3,...,k
 <p>可参考<a href="http://hcoona.github.io/Data-Structure/hash-table-summary-and-advanced-topics/">这篇文章</a>，之后有时间再自己整理</p>
 ]]></content>
       <categories>
-        <category>compute</category>
+        <category>Algorithm</category>
       </categories>
       <tags>
-        <tag>algorithm</tag>
-        <tag>code</tag>
+        <tag>Algorithm</tag>
+        <tag>hash</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Sampling</title>
+    <url>/Sampling/</url>
+    <content><![CDATA[<p>对于传统的静态有限量数据，有许多种抽样的方法，如简单随机抽样等. 但是对于现在的大数据流量，数据往往是以流的形式源源不断的到来，此时不仅仅数据量会很大，而且我们也无法确定数据量的大小，因此对于传统的抽样方法，并不合适我们目前的需求.</p>
+<a id="more"></a>
+<h1 id="基本概念">基本概念</h1>
+<h2 id="通常使用的抽样方法">通常使用的抽样方法</h2>
+<ul>
+<li><p>简单随机抽样 Sample Random Sampling</p></li>
+<li><p>系统抽样 Systematic Sampling</p></li>
+<li><p>分层抽样 Stratified Sampling</p></li>
+<li><p>水库抽样 Reservoir Sampling</p></li>
+<li><p>整群抽样 Cluster Sampling</p></li>
+<li><p>多阶段抽样 Multi-stage Sampling</p></li>
+</ul>
+<h2 id="与抽样相关的概念">与抽样相关的概念</h2>
+<ul>
+<li>总体</li>
+<li>个体</li>
+<li>总体容量</li>
+<li>有限总体/无限总体</li>
+<li>样本</li>
+<li>样本容量</li>
+</ul>
+<h2 id="抽样的特点">抽样的特点</h2>
+<ul>
+<li>总体中被抽中部分是依据随机性原则的，因此样本能够反应总体的部分特征</li>
+<li>抽样是为了通过目的反应总体，因抽样产生的误差可以根据抽样原理测定并控制在一定范围内，使得样本能够反应总体的特征</li>
+</ul>
+<h2 id="抽样的应用场景">抽样的应用场景</h2>
+<ul>
+<li>总体容量大</li>
+<li>调查过程具有破坏性</li>
+<li>调查修正 — 未验证已有调查结果的可靠性和正确性，可以根据样本推断总体情况从而实现对之前调查结果正确性的验证，并进一步实现调查结果的修正</li>
+</ul>
+<h1 id="简单随机抽样-sample-random-sampling">简单随机抽样 Sample Random Sampling</h1>
+<p><strong>定义</strong></p>
+<p>假设总体中共有 N 个个体，X<sub>i</sub>是一个随机变量，令 <span class="math display">\[
+\begin{align*}
+X_i = 
+\left\{
+\begin{array}{**lr**}
+1, &amp; \text{第i个单元被选中} \\
+0, &amp; \text{otherwise.}
+\end{array}
+\right.
+\end{align*}
+\]</span> 有 <span class="math display">\[
+P(X_1 = 1) = \dfrac{1}{N}
+\]</span> 简单随机抽样是一种等概率抽样方法，可以分为</p>
+<ul>
+<li>有放回(with replacement)抽样</li>
+<li>无放回(without replacement)抽样</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ol type="1">
+<li>对于每一个个体都要判断是否被选中，代价太大</li>
+<li>对于流数据或者无法事前确定总体容量的数据，不能使用简单随机抽样，因为不知道 N 有多大</li>
+</ol>
+<h1 id="系统抽样-systematic-sampling">系统抽样 Systematic Sampling</h1>
+<p>系统抽样也称为机械抽样，它是把总体中的个体按照某种顺序排列，在规定的范围内随机选取起始个体，然后按照一定的规则依次确定其它样本个体的抽样方法.</p>
+<ul>
+<li>直线等距抽样 Linear Systematic Sampling</li>
+<li>圆形等距抽样 Circular Systematic Sampling</li>
+</ul>
+<h2 id="直线等距抽样-linear-systematic-sampling">直线等距抽样 Linear Systematic Sampling</h2>
+<p><img src="Systematic Sampling 1.png" style="zoom:80%;float: middle;" /></p>
+<p><strong>目的</strong>：从 N 个总体中抽取 n 个样本</p>
+<p><strong>过程</strong>：不是直接从总体中随机抽取 n 个样本，而是选定一个<strong>起始个体</strong>，然后依据<strong>抽样间距</strong>进行选取</p>
+<ul>
+<li>计算抽样间距 <span class="math inline">\(k = \frac{N}{n}\)</span>，取最为接近的整数作为抽样间距 k</li>
+<li>从第1到第k个样本之间随机选取一个起始个体</li>
+<li>从起始个体开始依次增加 k 选取下一个样本个体</li>
+</ul>
+<p><strong>存在的问题</strong></p>
+<p>    如果 N 不正好是 n 的倍数，那么将不再是等概率抽样，此时可以使用圆形等距抽样.</p>
+<h2 id="圆形等距抽样-circular-systematic-sampling">圆形等距抽样 Circular Systematic Sampling</h2>
+<p><img src="Systematic Sampling 2.png" style="zoom:100%;float: middle;" /></p>
+<p><strong>过程</strong></p>
+<ul>
+<li>定义抽样间距 k 为最接近 <span class="math inline">\(\frac{N}{n}\)</span> 的整数</li>
+<li>在总体 N 中随机选取一个个体作为起始个体</li>
+<li>从起始个体开始，依次加 k 选择下一个样本个体，直到选够 n 个</li>
+</ul>
+<h2 id="优缺点">优缺点</h2>
+<p><strong>优点</strong></p>
+<ul>
+<li><p>操作方便，比简单随机抽样更为简单、时间和代价也更少</p></li>
+<li><p>抽出的样本在调查总体中分布比较均匀，具有较高代表性</p></li>
+<li><p>当对总体结构有一定了解时，利用已有信息对总体进行排队后在抽样，可以提高抽样效率</p></li>
+<li><p>有潜在分层功能. 系统抽样将总体分成均衡的几部分，在按事先确定的规则从各部分中抽取个体，可以看作是一种特殊的分层抽样</p></li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>需要将总体全部加载到内存中</li>
+<li>一个坏排列可能会使最终抽取的样本偏差很大</li>
+<li>抽样误差计算较为复杂</li>
+<li>如果调查总体具有某种周期性变化，会影响抽样的精度和代表性. 比如调查一个商店每月盈利情况，选择k=12，假设起始月份为1月份，那么将会抽出所有的1月份，不能真实的代表整体情况</li>
+</ul>
+<h1 id="分层抽样-stratified-sampling">分层抽样 Stratified Sampling</h1>
+<h2 id="过程">过程</h2>
+<ol type="1">
+<li>计算样本容量与总体容量之比</li>
+<li>将总体按照某种特征分成互不重叠的层，按比例确定各层要抽取的个体数（如果各层都不是整数，应调整样本容量，随机剔除部分个体）</li>
+<li>用简单随机抽样或者系统抽样在各层（不同的层可以采用不同的抽样算法以提高精度）抽取相应数量的个体</li>
+<li>将各层抽取的样本个体合在一起即为所抽取的样本</li>
+</ol>
+<h2 id="怎样分层">怎样分层</h2>
+<ol type="1">
+<li>选择某种特征作为分层依据（比如位置、度数等）
+<ul>
+<li>层内均匀，层与层之间非均匀</li>
+<li>与研究的变量高度相关</li>
+</ul></li>
+<li>分层的数量
+<ul>
+<li>取决与分层信息的多少：信息越少，分层越少</li>
+<li>为计算采样误差，每层至少要包括两个采样单元</li>
+</ul></li>
+<li>样本量分配方法</li>
+</ol>
+<h2 id="样本量分配方法">样本量分配方法</h2>
+<ol type="1">
+<li><p><strong>等额分配</strong>：每一层的样本量为 <span class="math display">\[
+ n_i = \dfrac{n}{K}
+ \]</span> 实施方便、便于管理. 各层工作量基本一致，可在相同时间内完成.</p></li>
+<li><p><strong>按比例分配</strong>：依据总体中各层个体数量 N<sub>i</sub> 所占的比例进行分配 <span class="math display">\[
+ n_i = n \times \dfrac{N_i}{N}
+ \]</span> 当关于各层个体数量N<sub>i</sub>已知时常采用该方法</p></li>
+<li><p><strong>奈曼分配法/最优分配法</strong>：假设抽取的第 i 层的样本数量为 n<sub>i</sub>，其值与该层个体数量N<sub>i</sub> 和样本标准差 S<sub>i</sub> 之积成正比，即 <span class="math display">\[
+ n_i = n \times \dfrac{N_i S_i}{\sum_i N_i S_i}
+ \]</span> 是利用样本标准差的加权分配. 目的是使方差最小(<span class="math inline">\(V_{SRS} \geqslant V_{prop} \geqslant V_{opt}\)</span>)</p></li>
+<li><p><strong>经济分配法</strong>：同时考虑变异性和代价的分配方法. 假设每层抽样代价为 C<sub>i</sub>， <span class="math display">\[
+ n_i = n \times \dfrac{\frac{N_i S_i}{C_i}}{\sum_{i=1}^{K} \frac{N_i S_i}{C_i}}
+ \]</span></p></li>
+</ol>
+<h1 id="水库抽样-reservoir-sampling">水库抽样 Reservoir Sampling</h1>
+<p><em>多年以后，面对蓄水池抽样算法，小茗同学将会回想起数学老师让他做“水池边放水边加水何时满水”的应用题的那个遥远的下午.</em></p>
+<p><span style="float:right"><em>——蓄水池抽样算法是一种优雅巧妙的算法</em></span></p>
+<p>? 给定一个数据流，这个数据流长度未知，并且对该流中的数据只能访问一次，那么用怎样的抽样算法才能从数据流中抽取 k 条数据并且使得所有数据被选中的概率相等呢？</p>
+<h2 id="水库抽样算法">水库抽样算法</h2>
+<h3 id="过程-1">过程</h3>
+<ol type="1">
+<li>将数据流中前 k 条数据保留，构建一个大小为 k 的水库</li>
+<li>对于数据流中第 m 条数据(<span class="math inline">\(m \gt k\)</span>)，以 <span class="math inline">\(\frac{k}{m}\)</span> （伪代码第8、9行）的概率决定是否由这条记录替换水库中的一条记录</li>
+<li>循环执行步骤2直至遍历全部数据</li>
+</ol>
+<p>水库抽样算法的空间复杂度为 <span class="math inline">\(O(k)\)</span>，时间复杂度为 <span class="math inline">\(O(N)\)</span>.</p>
+<p><img src="Reservoir Sampling 1.png" style="zoom:100%;float: middle;" /></p>
+<center>
+水库抽样算法伪代码
+</center>
+<h3 id="分析">分析</h3>
+<p><strong>定理</strong></p>
+<p>假设从长度为 N 的数据中随机抽取 k 条记录（$ N k$），水库抽样能保证每条记录以 <span class="math inline">\(\frac{k}{N}\)</span> 的概率保留在水库中.</p>
+<p>Proof <span class="math display">\[
+\text{第 i 个数据最终留在水库中的概率} = \text{第 i 个数据进入水库的概率} \times \text{第 i 个数据之后不被替换的概率}
+\]</span></p>
+<ol type="1">
+<li><p>当 n=k 时，任意一条记录保存在水库中的概率为 <span class="math inline">\(\frac{k}{n}=\frac{k}{k}=1\)</span></p></li>
+<li><p>假设当 n=m (<span class="math inline">\(m \gt k\)</span>)，水库中任意一条记录被抽到的概率为 <span class="math inline">\(\frac{k}{m}\)</span></p></li>
+<li><p>假设记录 t 是水库中的一条记录，当第 m+1 条数据到来时，记录 t 不被替换的概率为（第 m+1 条数据没有进入到水库中或者第 m+1 条数据替换了除 t 之外的其它某条数据） <span class="math display">\[
+ \left(1-\dfrac{k}{(m+1)}\right) + \dfrac{k}{(m+1)}\cdot \left(1-\dfrac{1}{k}\right) = \dfrac{(m+1) -1}{(m+1)} = \dfrac{m}{m+1}
+ \]</span> 同理，记录 t 不被第 m+2，m+3，...，N 条记录替换的概率为 <span class="math display">\[
+ \dfrac{m+1}{m+2},\quad \dfrac{m+2}{m+3},\quad ...,\quad \dfrac{N-1}{N}
+ \]</span> 因此，记录 t 保留在水库中的概率为 <span class="math display">\[
+ \dfrac{k}{m} \times \left( \dfrac{m}{m+1} \cdot \dfrac{m+1}{m+2} \cdot \dfrac{m+2}{m+3} \cdot \text{...} \cdot \dfrac{N-1}{N} \right) = \dfrac{k}{N}
+ \]</span> 证毕.</p>
+<p>水库抽样算法单遍扫描便可获得一个均匀的样本，其不足之处在于，当样本量 k 是与 总体容量 n 相关时，比如从总体中抽取 <span class="math inline">\(\frac{1}{3}\)</span> 的样本，此时需要其他的抽样算法.</p></li>
+</ol>
+<h2 id="分布式水库抽样算法">分布式水库抽样算法</h2>
+<p>考虑如下问题：</p>
+<p><img src="Reservoir Sampling 2.png" style="zoom:100%;float: middle" /></p>
+<p>假设一个Hadoop任务由 n 个Map组成，其中每个Map都接收到一个数据流，当这些数据无法完全保存在内存中时，如何随机抽取一个含有 k 条记录的样本？</p>
+<p>每个Map任务都接收到一个流数据，而且单个Map仅知道自身接收的数据的情况，不知道其它Map的情况. 此时可以通过分布式水库抽样算法解决.</p>
+<h3 id="过程-2">过程</h3>
+<p>在每个Map上单独运行水库抽样算法，对获得的n个子样本进行重抽样，获得最终样本. 假设在第 i 个Map上均匀地抽取 k 条记录，而第 i 个Map上接收到的数据量为 N<sub>i</sub>，令 <span class="math inline">\(N=\sum_{i=1}^{n} N_i\)</span> ，重抽样的步骤为</p>
+<ol type="1">
+<li>以 <span class="math inline">\(\frac{N_i}{N}\)</span> 的概率选择一个Map<em>（生成一个在[1,N]中的随机整数 m，如果 <span class="math inline">\(m \in \left( \sum_{i=1}^{i-1} N_i, \quad \sum_{i=1}^{i} N_i \right]\)</span>，那么选择第 i 个Map，类似于彩票调度算法）</em></li>
+<li>从第 i 个Map上随机地将一个子样本移到最终的样本中</li>
+<li>循环执行步骤1和步骤2，知道获得 k 个样本</li>
+</ol>
+<p>该算法给出的重抽样是<strong>无放回</strong>的，可以看出，分布式水库抽样算法的空间复杂度为 <span class="math inline">\(O(k)\)</span>，时间复杂度为 <span class="math inline">\(O(\max(N_i))\)</span>.</p>
+<p><img src="Reservoir Sampling 3.png" style="zoom:75%;float: middle;" /></p>
+<center>
+分布式水库抽样算法伪代码
+</center>
+<h3 id="分析-1">分析</h3>
+<p><strong>定理</strong></p>
+<p>分布式水库抽样算法保证了分布式系统中每条记录以 <span class="math inline">\(\frac{k}{N}\)</span> 的概率保留在最终的样本中，其中 N 为整个分布式系统中数据记录总数.</p>
+<p>Proof</p>
+<ol type="1">
+<li><p>假设 <span class="math inline">\(N_i \gt k\)</span></p>
+<p>由水库抽样算法可知，第 i 个Map中接收的一条记录出现在子样本中的概率为 <span class="math inline">\(\frac{k}{N_i}\)</span>，从第 i 个Map中抽取一条记录的概率为 <span class="math inline">\(\frac{1}{k}\)</span> ，因此第 i 个Map接收的一条记录出现在最终样本中的概率为 <span class="math display">\[
+ \dfrac{N_i}{N} \cdot \dfrac{k}{N_i} \cdot \dfrac{1}{k} = \dfrac{1}{N}
+ \]</span></p></li>
+<li><p>假设 <span class="math inline">\(N_i \leqslant k\)</span></p>
+<p>一条记录出现在第 i 个Map的子样本中的概率为 1，而从第 i 个Map中随机抽取一条记录的概率为 <span class="math inline">\(\frac{1}{N_i}\)</span>. 因此，第 i 个Map接收到的一条记录出现在最终样本中的概率为 <span class="math display">\[
+ \dfrac{N_i}{N} \cdot \dfrac{1}{N_i} = \dfrac{1}{N}
+ \]</span></p></li>
+</ol>
+<p>这样，重复 k 次后，无论哪个Map接收的数据记录，都以 <span class="math inline">\(\frac{k}{N}\)</span> 的概率保留在最终的样本中.</p>
+<h1 id="几中抽样算法的比较">几中抽样算法的比较</h1>
+<table>
+<tr>
+<td>
+类别
+</td>
+<td>
+共同点
+</td>
+<td>
+各自特点
+</td>
+<td>
+互相联系
+</td>
+<td>
+使用场景
+</td>
+</tr>
+<tr>
+<td>
+分布式水库抽样
+</td>
+<td rowspan="4">
+每个个体被抽取到的可能性相等
+</td>
+<td>
+先获取子样本再重抽样
+</td>
+<td>
+每个子系统相互独立
+</td>
+<td>
+分布式数据流
+</td>
+</tr>
+<tr>
+<td>
+水库抽样
+</td>
+<td>
+从总体中逐个随机抽取
+</td>
+<td>
+</td>
+<td>
+数据流
+</td>
+</tr>
+<tr>
+<td>
+系统抽样
+</td>
+<td>
+将总体分成均匀的几部分，按照事先确定的规则在各部分抽取
+</td>
+<td>
+特殊的分层抽样
+</td>
+<td>
+总体中个体数较多
+</td>
+</tr>
+<tr>
+<td>
+分层抽样
+</td>
+<td>
+将总体按照某种特征分成互补重叠的几层，每次再采用随机或系统抽样方法进行抽样
+</td>
+<td>
+各层在抽样时可采用系统抽样或者简单随机抽样
+</td>
+<td>
+总体由差异性明显的几部分组成
+</td>
+</tr>
+</table>
+]]></content>
+      <categories>
+        <category>Algorithm</category>
+      </categories>
+      <tags>
+        <tag>Algorithm</tag>
+        <tag>sampling</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Tail Probability Inequality</title>
+    <url>/Tail-Probability-Inequality/</url>
+    <content><![CDATA[<h1 id="概述">概述</h1>
+<h2 id="马尔可夫不等式-markov-inequality">马尔可夫不等式 Markov Inequality</h2>
+<p>If X is any r.v., and <span class="math inline">\(0 \lt a \lt +\infty\)</span>, then <span class="math display">\[
+P(X \gt a) \leqslant \frac{E[X]}{a} \quad or \quad P(X \gt aE[x]) \leqslant \frac{1}{a}
+\]</span></p>
+<a id="more"></a>
+<h2 id="切比雪夫不等式-chebyshevs-inequality">切比雪夫不等式 Chebyshev's Inequality</h2>
+<p>If r.v.X has mean and variance <span class="math inline">\(\mu = E[x]\)</span> and <span class="math inline">\(\sigma^2 = E[(X-\mu)^2]\)</span>, then <span class="math display">\[
+P(|X-\mu| \gt a) \leqslant \frac{\sigma^2}{a^2} \quad or \quad P(|X-\mu| \gt aE[X]) \leqslant \frac{\sigma^2}{a^2E[x]^2}
+\]</span></p>
+<h2 id="切诺夫界-chernoff-bound">切诺夫界 Chernoff Bound</h2>
+<p>Let X<sub>i</sub> be a sequence of independent Bernoulli r.v.s with <span class="math inline">\(P(X_i = 1)=p_i\)</span> . Assume that r.v.<span class="math inline">\(X=\sum_{i=1}^{n} X_i\)</span> and <span class="math inline">\(\mu=\sum_{i=1}^{n}p_i\)</span>.</p>
+<p>Lower Bound: <span class="math display">\[
+\begin{aligned}
+&amp;P(X \lt (1-\delta)\mu) \lt \left( \dfrac{e^{- \delta}}{(1-\delta)^{1-\delta}} \right)^\mu \\
+&amp;P(X \lt (1-\delta)\mu) \lt e^{-\frac{\mu \delta^2}{2}}
+\end{aligned}
+\]</span></p>
+<p>Upper Bound: <span class="math display">\[
+\begin{aligned}
+&amp; P(X \gt (1+\delta)\mu) \lt \left( \dfrac{e^\delta}{(1+\delta)^{1+\delta}} \right)^\mu \\
+&amp; P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}}
+\end{aligned}
+\]</span></p>
+<h1 id="证明">证明</h1>
+<h2 id="markov-inequality">Markov Inequality</h2>
+<p><span class="math display">\[
+P(X \gt a) \leqslant \frac{E[X]}{a} \quad or \quad P(X \gt aE[x]) \leqslant \frac{1}{a}
+\]</span></p>
+<p>Proof: <span class="math display">\[
+\begin{align*}
+P(X \gt a) &amp;= \int_{X\gt a}p(x)dx \\
+&amp;= \int_a^\infty p(x)dx \\
+&amp;\leqslant \int_a^\infty \frac{x}{a}p(x)dx &amp; \text{since X $\gt$ a}\\
+&amp;= \frac{1}{a} \int_a^\infty xp(x)dx \\
+&amp;\leqslant \frac{1}{a}\int_0^\infty xp(x)dx \\
+&amp;= \frac{1}{a} \int_{-\infty}^\infty xp(x)dx &amp; \text{since X is non-negative r.v.}\\
+&amp;= \frac{E[X]}{a}
+\end{align*}
+\]</span></p>
+<h2 id="chebyshevs-inequality">Chebyshev's Inequality</h2>
+<p><span class="math display">\[
+P(|X-\mu| \gt a) \leqslant \frac{\sigma^2}{a^2} \quad or \quad P(|X-\mu| \gt aE[X]) \leqslant \frac{\sigma^2}{a^2E[x]^2}
+\]</span></p>
+<p>Proof:</p>
+<p>Let <span class="math inline">\(Y = |X- \mu|^2\)</span> in Markov's inequality, then <span class="math display">\[
+P(|X-\mu| \gt a) = P(Y \gt a^2) \leqslant \dfrac{E[Y]}{a^2} = \dfrac{\sigma^2}{a^2}
+\]</span></p>
+<h2 id="chernoff-bound">Chernoff Bound</h2>
+<h3 id="lower-bound">Lower Bound</h3>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;P(X \lt (1-\delta)\mu) \lt \left( \dfrac{e^{- \delta}}{(1-\delta)^{1-\delta}} \right)^\mu \\
+&amp;P(X \lt (1-\delta)\mu) \lt e^{-\frac{\mu \delta^2}{2}}
+\end{aligned}
+\]</span></p>
+<p>Proof:</p>
+<p>For <span class="math inline">\(t \gt 0\)</span>, <span class="math display">\[
+\begin{aligned}
+P(X \lt (1-\delta)\mu) &amp;= P(e^{-tX} \gt e^{-t(1-\delta)\mu}) \\
+&amp;\leqslant \dfrac{E[e^{-tX}]}{e^{-t(1-\delta)\mu}} \\
+&amp;=\frac{\prod_{i=1}^{n} E[e^{-tX_i}]}{e^{-t(1-\delta)\mu}} \\
+\end{aligned}
+\]</span> since <span class="math inline">\(1-x \lt e^{-x}\)</span>, we have <span class="math display">\[
+E[e^{-tX_i}] = p_i e^{-t} + (1-p_i) = 1 - p_i(1-e^{-t}) &lt; exp(p_i(e^{-t}-1))
+\]</span></p>
+<p><span class="math display">\[
+\prod_{i=1}^n E[e^{-tX_i}] = \prod_{i=1}^{n} exp(p_i(e^{-t}-1)) = exp((e^{-t}-1)\sum_{i=1}^n p_i) = exp(\mu(e^{-t}-1)) = e^{\mu(e^{-t}-1)}
+\]</span></p>
+<p>Hence, <span class="math display">\[
+\begin{align*}
+P(X \lt (1-\delta)\mu) &amp;\lt \dfrac{e^{\mu(e^{-t}-1)}}{e^{-t(1-\delta)\mu}} \\
+&amp;= e^{\mu(e^{-t}-1)+t(1-\delta)\mu} \\
+&amp;= e^{\mu(e^{-t}-1+t(1-\delta))}
+\end{align*}
+\]</span> Taking the derivative of <span class="math inline">\(\mu(e^{-t}-1+t(1-\delta))\)</span> and setting <span class="math inline">\(-e^{-t}+1-\delta = 0\)</span>. We have <span class="math inline">\(t=ln \left( \dfrac{1}{1-\delta} \right)\)</span>. <span class="math display">\[
+P(X \lt (1-\delta)\mu) \lt \left( \dfrac{e^{-\delta}}{(1-\delta)^{(1-\delta)}} \right)^\mu
+\]</span></p>
+<p>To get the simpler form of the bound, we need to get rid of the clumsy term of <span class="math inline">\((1-\delta)^{(1-\delta)}\)</span>. <span class="math display">\[
+(1-\delta)ln(1-\delta) = (1-\delta)(\sum_{i=1}^{\infty} -\dfrac{\delta^i}{i}) \gt -\delta+\dfrac{\delta^2}{2} \\
+(1-\delta)^{(1-\delta)} \lt e^{-\delta+\frac{\delta^2}{2}}
+\]</span> Furthermore, <span class="math display">\[
+\begin{align*}
+P(X \lt (1-\delta)\mu) &amp;\lt \left( \dfrac{e^{-\delta}}{(1-\delta)^{(1-\delta)}} \right)^\mu \\
+&amp; \lt \left( \dfrac{e^{-\delta}}{e^{-\delta+\frac{\delta^2}{2}}} \right)^\mu \\
+&amp;= e^{\frac{-\mu \sigma^2}{2}}
+\end{align*}
+\]</span></p>
+<h3 id="upper-bound">Upper Bound</h3>
+<p><span class="math display">\[
+\begin{aligned}
+&amp; P(X \gt (1+\delta)\mu) \lt \left( \dfrac{e^\delta}{(1+\delta)^{1+\delta}} \right)^\mu \\
+&amp; P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}}
+\end{aligned}
+\]</span></p>
+<p>Proof <span class="math display">\[
+\begin{align*}
+P(X \gt (1+\delta)\mu) &amp;= P(e^{tX} \gt e^{t(1+\delta)\mu}) \\
+&amp;\lt \dfrac{E[e^{tX}]}{e^{t(1+\delta)\mu}} \\
+&amp;= \dfrac{\prod_{i=1}^n E[e^{tX_i}]}{e^{t(1+\delta)\mu}} \\
+&amp;= \dfrac{\prod_{i=1}^n (p_ie^t+(1-p_i))}{e^{t(1+\delta)\mu}} \\
+&amp;= \dfrac{\prod_{i=1}^n (1-p_i(1-e^t))}{e^{t(1+\delta)\mu}} \\
+&amp;\lt \dfrac{\prod_{i=1}^n e^{p_i(e^t-1)}}{e^{t(1+\delta)\mu}} \\
+&amp;= \dfrac{e^{\mu(e^t-1)}}{e^{t(1+\delta)\mu}} \\
+&amp;= e^{\mu(e^t-1-t(1+\delta)\mu)}
+\end{align*}
+\]</span> Let <span class="math inline">\((e^t-1-t(1+\delta)\mu)&#39;=0\)</span>, then we have <span class="math inline">\(t=ln(1+\delta)\)</span>. <span class="math display">\[
+P(X \gt (1+\delta)\mu) \lt \left( \dfrac{e^\delta}{(1+\delta)^{1+\delta}} \right)^\mu
+\]</span> Now, <span class="math display">\[
+(1+\delta)ln(1+\delta) \gt (1+\delta) \cdot \dfrac{2\delta}{2+\delta}
+\]</span> Furthermore, <span class="math display">\[
+P(X \gt (1+\delta)\mu) \lt \left( \dfrac{e^\delta}{(1+\delta)^{1+\delta}} \right)^\mu \lt e^{(\delta - (1+\delta)\cdot \frac{2\delta}{2+\delta})\mu}=e^{-\frac{\delta^2}{2+\delta}} \qquad \delta \geqslant 0
+\]</span> Hence, <span class="math display">\[
+P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}} \qquad 0 \leqslant \delta \leqslant 2
+\]</span></p>
+]]></content>
+      <categories>
+        <category>Algorithm</category>
+      </categories>
+      <tags>
+        <tag>Algorithm</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Random Walk and PageRank</title>
+    <url>/Random-Walk-and-PageRank/</url>
+    <content><![CDATA[<h1 id="引子">引子</h1>
+<p><strong>联合概率</strong></p>
+<p><strong>定义：</strong> 给定n个随机变量X<sub>1</sub>, X<sub>2</sub>, ..., X<sub>n</sub>，分别取值为x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>n</sub> 的联合概率 <span class="math inline">\(f(x_1,x_2,\dots,x_n)\)</span>表示为 <span class="math display">\[
+f(x_1,x_2,\dots,x_n)=P(X_1=x_1,X_2=x_2,\dots,X_n=x_n)
+\]</span> 若n个随机变量是相互独立的，那么其联合概率可以很方便地计算为 <span class="math display">\[
+\begin{align*}
+f(x_1,x_2,\dots,x_n) &amp;= P(X_1=x_1,X_2=x_2,\dots,X_n=x_n) \\
+&amp;= \prod_{i=1}^{n} P(X_i=x_i) = \prod_{i=1}^{n} f_{X_i}(x_i)
+\end{align*}
+\]</span> 然而通常情况下，数据之间并不总是独立的，比如对于声音，文本数据，其前后之间是有一定联系的.</p>
+<a id="more"></a>
+<p><strong>概率的链式法则</strong></p>
+<p>两个事件同时发生的概率用条件概率表示为： <span class="math display">\[
+P(a,b) = P(a|b) \cdot P(b)
+\]</span> 三个事件的概率链式调用为： <span class="math display">\[
+\begin{align*}
+P(a,b,c) &amp;= P(a|b,c)\cdot P(b,c) \\
+&amp;= P(a|b,c) \cdot P(b|c) \cdot P(c)
+\end{align*}
+\]</span> 其中<span class="math inline">\(P(a|b,c)\)</span>表示在事件b和c都发生的情况下，事件a发生的概率. 推广到N个事件，有 <span class="math display">\[
+\begin{align*}
+P(X_1,X_2,\dots,X_n) &amp;= P(X_1|X_2,X_3,\dots,X_n) \cdot P(X_2|X_3,X_4,\dots,X_n) \cdot \dots \cdot P(X_{n-1}|X_n) \cdot P(X_n) \\
+&amp;= P(X_n) \prod_{i=1}^{n-1} P(X_{i}|X_{i+1},\dots,X_n) \\
+&amp;= P(X_1) \prod_{i=2}^{n} P(X_{i}|X_{i-1},\dots,X_1)
+\end{align*}
+\]</span> 那链式法则的作用呢？</p>
+<p>假设事件a与事件b独立，那么有 <span class="math display">\[
+P(a|b) = P(a)
+\]</span> 推广到三个事件有 <span class="math display">\[
+P(a|b,c) = P(a|c)
+\]</span> 即事件b不是事件a的发生条件，a只与c有关.</p>
+<p><strong>例子：</strong> 假设有事件A，B，C，D，E，它们之间的关系·如下</p>
+<p><img src="概率的链式法则.png" style="zoom:50%;float:middle" /></p>
+<p>则 <span class="math display">\[
+\begin{align*}
+P(A,B,C,D,E) &amp;= P(E | B, D, C, A) * P(B, D, C, A)\\
+&amp;= P(E | B, D, C, A) * P(B | D, C, A) *  P(D, C, A)\\
+&amp;= P(E | B, D, C, A) * P(B | D, C, A) *  P(D | C, A) * P(C, A)\\
+&amp;= P(E | B, D, C, A) * P(B | D, C, A) *  P(D | C, A) * P(C | A) * P(A)
+\end{align*}
+\]</span> 而 <span class="math display">\[
+P(E | B, D, C, A) = P(E | B)\\
+P(B | D, C, A) = P(B | C, A)\\
+P(D | C, A) = P(D | C)\\
+P(C | A) = P(C)
+\]</span> 所以 <span class="math display">\[
+P(A, B, C, D, E) = P(E | B) * P(B | C, A) * P(D | C) * P(C) * P(A)
+\]</span></p>
+<p><strong>一阶相关关系</strong> first-order correlation <span class="math display">\[
+P(X_i|X_i-1,\dots,X_1) = P(X_i|X_{i-1})
+\]</span> <strong>t阶相关关系</strong> <span class="math display">\[
+P(X_i|X_{i-1},\dots,X_1) = P(X_i|X_i-1,\dots,X_{i-1})
+\]</span></p>
+<h1 id="随机过程-random-process">随机过程 Random process</h1>
+<h2 id="定义">定义</h2>
+<p><strong>定义：（时间集合）</strong> 设T是实数轴<span class="math inline">\((-\infty,\infty)\)</span>上的子集，且包含无限多个元素. 随机序列是时间的一个函数，可表示为<span class="math inline">\(\{X(t),t\in T\}\)</span>，其中时间集合T表示了随机序列所有可能的时间.</p>
+<p><strong>定义：（随机过程）</strong> 设<span class="math inline">\((\Omega,F,P)\)</span>是一概率空间，T表示时间集合，若对<span class="math inline">\(\forall t \in T\)</span>，均有定义在<span class="math inline">\((\Omega,F,P)\)</span>上的一个随机变量<span class="math inline">\(X(t,\omega)\)</span>，<span class="math inline">\((\omega \in \Omega)\)</span>与之对应，则称依赖于时间t的随机变量序列<span class="math inline">\(X(t,\omega)\)</span>为一随机过程. 记为<span class="math inline">\(\{X(t,\omega),t\in T, \omega \in \Omega\}\)</span>，简记为<span class="math inline">\(\{X(t),t \in T\}\)</span>. 随机过程<span class="math inline">\(\{X(t),t \in T\}\)</span>的所有可能的取值被称为该随机过程的<strong>状态空间</strong>或者<strong>值域</strong>.</p>
+<blockquote>
+<p>概率空间<span class="math inline">\((\Omega,F,P)\)</span>：<span class="math inline">\(\Omega\)</span>表示样本空间，F为样本空间<span class="math inline">\(\Omega\)</span>的幂集的子集，P为概率</p>
+<p>幂集：集合{a,b,c}的幂集为{<span class="math inline">\(\emptyset\)</span>, {a}, {b}, {c}, {a,b}, {a,c}, {b,c}, {a,b,c}}</p>
+</blockquote>
+<p><strong>例子：</strong>对于用户上网的过程，随机过程<span class="math inline">\(\{X(t,\omega),t\in T, \omega \in \Omega\}\)</span>中的时间集合是离散的，因此<span class="math inline">\(X(n,\omega)\)</span>表示该用户第n个访问的网页，其中状态空间为所有网页构成的集合，也是离散的.</p>
+<h1 id="马尔可夫过程">马尔可夫过程</h1>
+<h2 id="马尔可夫性-markov-property">马尔可夫性 Markov Property</h2>
+<p><strong>定义：（马尔可夫性Markov Property）</strong> 设<span class="math inline">\(\{X(t),t \in T\}\)</span>是一个随机过程，已知<span class="math inline">\(\{X(t),t \in T\}\)</span>在当前<span class="math inline">\(t_n\)</span>时刻所处的状态，它在 <span class="math inline">\(t &gt; t_n\)</span> 时刻所处的状态与其在 t<sub>n</sub> 时刻之前所处的状态无关，则称<span class="math inline">\({X(t),t \in T}\)</span>满足马尔可夫性.</p>
+<blockquote>
+<p>描述了随机过程的无记忆性，即已知现在，将来和过去是独立的.</p>
+<p>满足马尔可夫性的随机过程称为马尔可夫过程.</p>
+</blockquote>
+<h2 id="马尔可夫过程-markov-process">马尔可夫过程 Markov Process</h2>
+<p><strong>定义：（马尔可夫过程）</strong> 设<span class="math inline">\(\{X(t),t \in T\}\)</span>的z状态空间为S，如果对 <span class="math inline">\(\forall t_0 &lt; t_1 &lt; \dots &lt; t_n &lt; t_{n+1} \in T\)</span>，在条件 <span class="math inline">\(X(t_i)=x_i\)</span>，<span class="math inline">\(x_i \in S\)</span>，<span class="math inline">\(i=0,1,\dots,n\)</span>下，<span class="math inline">\(X(t_{n+1})\)</span>的条件概率恰好等于在条件<span class="math inline">\(X(t_n)=x_n\)</span>下的条件概率，即 <span class="math display">\[
+P(X(t_{n+1})=x_{n+1}|X(t_0)=x_0,\dots,X(t_n)=x_n) = P(X(t_{n+1})=x_{n+1}|X(t_n)=x_n)
+\]</span> 则称<span class="math inline">\(\{X(t),t \in T\}\)</span>为马尔可夫过程.</p>
+<blockquote>
+<p>这里关注的马尔可夫过程不仅其时间集合是离散的，其状态空间也是离散的，这类特殊的马尔可夫过程称为<strong>马尔可夫链</strong>，简称<strong>马氏链</strong>.</p>
+</blockquote>
+<h2 id="转移概率-transition-probability">转移概率 Transition Probability</h2>
+<p><strong>定义：（转移概率）</strong> 称条件概率 <span class="math inline">\(P(X_{n+k}=j | X_n=i)\)</span> 为马氏链 <span class="math inline">\(\{X_n: n \in \mathbb{N}\}\)</span> 的<strong>k 步转移概率</strong>，记为 <span class="math inline">\(p_{ij}^{(k)}(n)\)</span>，其中 <span class="math inline">\(i,j \in S\)</span>，<span class="math inline">\(k&gt;0\)</span>. 它表示马氏链 <span class="math inline">\(\{X_n: n \in \mathbb{N}\}\)</span> 在 n 时刻处于状态 i 的条件下，经过 k 步转移，于 n+k 时刻到达状态 j 的概率.</p>
+<blockquote>
+<p>当k=1时，称之为<strong>一步转移概率</strong>，简称<strong>转移概率</strong>，记为<span class="math inline">\(p_{ij}(n)\)</span>.</p>
+</blockquote>
+<h2 id="齐次马尔可夫链-homogeneous-markov-chain">齐次马尔可夫链 Homogeneous Markov Chain</h2>
+<p>若对任意的<span class="math inline">\(i,j \in S\)</span>，马氏链<span class="math inline">\(\{X_n: n \in \mathbb{N} \}\)</span> 的转移概率 <span class="math inline">\(p_{ij}(n)\)</span> 与 n 无关，即对任意时刻n，i到j的一步转移概率有 <span class="math display">\[
+p_{ij}(n) = p_{ij}(n+1) = p_{ij}(n+2) = \dots
+\]</span> 则称马氏链是齐次的，并记概率 <span class="math inline">\(p_{ij}(n)\)</span> 为 <span class="math inline">\(p_{ij}\)</span>. 特别的，齐次马氏链的<span class="math inline">\(\mathbf{P}^{(k)} = \mathbf{P}^k\)</span>.</p>
+<blockquote>
+<p>无论当前是第几步，只要起点和终点相同，则它们之间的一步转移概率就相同，这样的马氏链被称为齐次的马尔可夫链.</p>
+</blockquote>
+<h1 id="随机游走-random-walk">随机游走 Random Walk</h1>
+<h2 id="图-graph">图 Graph</h2>
+<p><strong>定义：（图）</strong> 图G记做一个二元组<span class="math inline">\(G=(V,E)\)</span>，其中，V是有限非空的顶点集合，记为<span class="math inline">\(V(G)\)</span>，E是<span class="math inline">\(V \times V\)</span>的一个子集，其元素是图的边Edge，记为<span class="math inline">\(E(G)\)</span>.</p>
+<h2 id="度degree">度Degree</h2>
+<ul>
+<li>出度 Out-degree</li>
+<li>入度 In-degree</li>
+</ul>
+<h2 id="路径path">路径Path</h2>
+<p>从顶点u到顶点v的一条路径是指一个点边序列：v<sub>0</sub>, e<sub>1</sub>, v<sub>1</sub>, e<sub>2</sub>, v<sub>2</sub>, ... , e<sub>k</sub>, v<sub>k</sub>，k为路径长度，起点v<sub>0</sub>=u，终点v<sub>k</sub>=v，若u=v，则该条路径形成一个环路，称为<strong>闭环</strong>.</p>
+<h2 id="连通分量-connected-component">连通分量 Connected Component</h2>
+<p>在一个途中，若从一个顶点到另一个顶点有路径相连，则称这两个顶点是<strong>连通的</strong>. 若图中任意两点都是连通的，则称图G为<strong>连通图</strong>.</p>
+<p>无向图的连通子图称为G的<strong>连通分量</strong>，极大连通子图是指对于图G中最大的一个连通分量.</p>
+<p>在<strong>有向图</strong><span class="math inline">\(G=(V,E)\)</span>中，若V中任意两个不同的顶点u到顶点v和顶点v到顶点u之间都存在路径，则称图G为<strong>强连通图</strong>，对应的有向图G的连通子图称为G的<strong>强连通分量</strong>.</p>
+<h2 id="图的表示方法">图的表示方法</h2>
+<ul>
+<li>邻接表 Adjacency list</li>
+<li>邻接矩阵 Adjacency matrix</li>
+</ul>
+<h2 id="概率转移矩阵-probability-transition-matrix">概率转移矩阵 Probability Transition Matrix</h2>
+<p>称以马氏链<span class="math inline">\(\{X_n:n\in \mathbb{N}\}\)</span>的 k 步转移概率 <span class="math inline">\(p_{ij}^{(k)}(n)\)</span> 为第 i 行 第 j 列元素的矩阵 <span class="math display">\[
+\mathbf{P}^{(k)}(n) = [p_{ij}^{(k)}(n)]
+\]</span> 为马氏链<span class="math inline">\(\{X_n:n\in \mathbb{N}\}\)</span>在n时刻的k步转移概率矩阵.</p>
+<p>约定当 k=0 时， <span class="math display">\[
+\begin{align*}
+\mathbf{P}^{(0)}(n) = \left\{ 
+\begin{array}{ll}
+1, &amp; \text{if $i=j$} \\
+0, &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span> 此时<span class="math inline">\(\mathbf{P}^{(0)}(n) = \mathbf{I}\)</span>为单位矩阵.</p>
+<blockquote>
+<p>性质：</p>
+<ul>
+<li><span class="math inline">\(0 \leqslant p_{ij}^{(n)} \leqslant 1, \forall i,j \in S\)</span></li>
+<li><span class="math inline">\(\sum_{j} p_{ij}^{(n)}=1, \forall i,j \in S\)</span>，即转移概率矩阵行和为1，列和不一定为1</li>
+</ul>
+</blockquote>
+<h1 id="平稳分布stationary-distribution">平稳分布Stationary Distribution</h1>
+<h2 id="状态分布-state-distribution">状态分布 State Distribution</h2>
+<p>令<span class="math inline">\(\bf{\pi}^{(t)}\)</span>为状态空间为S的马尔可夫链在时刻 t 的状态分布，即 <span class="math display">\[
+\pi^{(t)} = P(X_t=x)
+\]</span> 特别的，将<span class="math inline">\(\bf{\pi}^{(0)}\)</span>称为初始分布.</p>
+<blockquote>
+<p>性质：</p>
+<ul>
+<li><span class="math inline">\(\bf{\pi}^{(t)}\)</span> 的每个分量满足 <span class="math inline">\(0 \leqslant \bf{\pi}_i^{(t)} \leqslant 1\)</span></li>
+<li><span class="math inline">\(\sum_{i \in S} \pi_j^{(t)} = 1\)</span></li>
+<li><span class="math inline">\(\bf{\pi}^{(t+1)} = \bf{\pi}^{(t)}\mathbf{P}(t)\)</span></li>
+</ul>
+</blockquote>
+<h2 id="平稳分布-stationary-distribution">平稳分布 Stationary Distribution</h2>
+<p>对于一个转移概率矩阵为 <span class="math inline">\(\mathbf{P}\)</span> 的有限状态马尔可夫链，若状态分布 <span class="math inline">\(\mathbf{\pi}\)</span> 满足： <span class="math display">\[
+\mathbf{\pi P} = \mathbf{\pi}
+\]</span> 则称 <span class="math inline">\(\mathbf{\pi}\)</span> 为该马尔可夫链的平稳分布.</p>
+<p><strong>定理：</strong> 如果一个马氏链有状态转移矩阵<span class="math inline">\(\mathbf{P}\)</span>，状态空间<span class="math inline">\(S=\{1,2,\dots \}\)</span>，并且它满足<strong>不可约</strong>和<strong>反周期</strong>性质，那么<span class="math inline">\(\lim\limits_{n\rightarrow \infty} P_{ij}^{n}\)</span>与 i 无关，即 <span class="math display">\[
+\lim_{n \rightarrow \infty} P_{ij}^{n} = \pi(j)
+\]</span> 即 <span class="math display">\[
+\begin{align*}
+\lim_{n \rightarrow \infty} \mathbf{P}^n = \left[ 
+\begin{array}{ccccc}
+\pi_1 &amp; \pi_2 &amp; \dots &amp; \pi_j &amp; \dots \\
+\pi_1 &amp; \pi_2 &amp; \dots &amp; \pi_j &amp; \dots \\
+\dots &amp; \dots &amp; \dots &amp; \dots &amp; \dots \\
+\pi_1 &amp; \pi_2 &amp; \dots &amp; \pi_j &amp; \dots \\
+\dots &amp; \dots &amp; \dots &amp; \dots &amp; \dots 
+\end{array}
+\right]
+\end{align*}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{\pi} = [\pi_1, \pi_2, \dots,\pi_j,\dots], \quad \sum_{i=1}^{\infty} \pi(j) = 1
+\]</span></p>
+<h2 id="不可约性-irreducibility">不可约性 Irreducibility</h2>
+<p>如果从状态 x 可以经过有限步转移到达状态 y，并且状态 y 也可以经过有限步转移到达状态 x，那么称状态 x 和状态 y 是连通的. 如果马氏链中任意两个状态都是连通的，则称该马氏链是<strong>不可约irreducible</strong>.</p>
+<blockquote>
+<ul>
+<li>马氏链中任意两个状态都是连通的，意味着存在一个 n，使得矩阵 <span class="math inline">\(\mathbf{P}^{(n)}\)</span> 中任意一个元素都大与0</li>
+<li>如果一张图是强连通的，那么它一定是不可约的，否则这个图是可约的</li>
+<li>如果马氏链是不可约的，那么所有状态的周期都是相同的</li>
+</ul>
+</blockquote>
+<h2 id="反周期性-aperiodic">反周期性 aperiodic</h2>
+<p>状态 x 的周期 d<sub>x</sub> 是集合 <span class="math inline">\(\{n | (\mathbf{P}^n)_{x,x} &gt; 0 \}\)</span> 的最大公约数. 特别地，如果 <span class="math inline">\(\forall n \geqslant 1\)</span>，<span class="math inline">\((\mathbf{P}^n)_{x,x} = 0\)</span>，那么 <span class="math inline">\(d_{x} = \infty\)</span>. 而如果一个马氏链的所有状态的周期均为1，则称这个马氏链是<strong>反周期</strong>的.</p>
+<blockquote>
+<p>对于一个有限的马氏链，<span class="math inline">\((\mathbf{P}^n)_{x,x} &gt; 0\)</span> 意味着状态 x 在一个长度为 n 的环上. 那么状态 x 的周期是经过该状态所有环的最大公约数. <strong>反周期指的是马氏链的状态转化不是循环的.</strong></p>
+</blockquote>
+<p><strong>定理：</strong> 如果状态 x 和状态 y 是连通的，那么 <span class="math inline">\(d_x=d_y\)</span></p>
+<blockquote>
+<p>即如果状态 x 和 y 之间存在相互可达的路径，则这两个状态的周期相等</p>
+</blockquote>
+<p><strong>定理：</strong> 如果 <span class="math inline">\(n \mod d_x \ne 0\)</span>，那么 <span class="math inline">\((\mathbf{P}^n)_{x,x} = 0\)</span></p>
+<blockquote>
+<p>状态 x 的周期为 d<sub>x</sub>，若 n 不为 d<sub>x</sub> 的整数倍，则从 x 出发，经过 n 步是不可能回到状态 x 的</p>
+</blockquote>
+<h1 id="pagerank">PageRank</h1>
+<p>PageRank衡量网页“重要程度”的两个假设为：</p>
+<ul>
+<li>如果有很多网页同时指向某个网页，被指向的这个网页会比较重要，其对应的PageRank值更大</li>
+<li>如果一个非常重要的页面指向了某个网页，那么被指向的这个网页也会相对较为重要，其对应的PageRank值更大</li>
+</ul>
+<p><strong>定义：（PageRank值）</strong> 设 u 是有向图G中的一个顶点，<span class="math inline">\(N(u)\)</span> 表示图G中指向顶点 u 的顶点的集合. 则图顶点 u 的Pageank值可以计算为 <span class="math display">\[
+PR(u) = \sum_{v \in N(u)} \dfrac{PR(v)}{N(v)}
+\]</span> 其中<span class="math inline">\(PR(u)\)</span>表示顶点 u 的PageRank值.</p>
+<blockquote>
+<p>从上式可以看出：</p>
+<p>一方面，若是 <span class="math inline">\(N(u)\)</span> 中包含的顶点越多，说明指向顶点 u 的顶点越多，因此顶点u的PageRank值越大；</p>
+<p>另一方面，顶点 u 从指向它的顶点 v 处获得的重要程度为 <span class="math inline">\(\dfrac{PR(v)}{N(v)}\)</span>，即顶点 v 将它的PageRank值平均分给其指向的顶点，因此，顶点 v 的PageRank值越大，其所指向的顶点数量越少，那么顶点 u 从 v 处继承的PageRank值也越大.</p>
+</blockquote>
+<h2 id="流量方程-flow-equation">流量方程 flow equation</h2>
+<p>设顶点 v<sub>i</sub> 有 n 条出链接，概率矩阵P，PageRank向量 r，r<sub>i</sub> 表示顶点 v<sub>i</sub> 的重要程度，且<span class="math inline">\(\sum\limits_{i=1}^{n} r_i = 1\)</span>. <span class="math display">\[
+\begin{align*}
+r = \left(
+\begin{array}{c}
+r_1\\
+r_2\\
+\dots \\
+r_n
+\end{array}
+\right)
+\qquad 
+\mathbf{P} = \left(
+\begin{array}{cccc}
+p_{11} &amp; p_{12} &amp; \dots &amp; p_{1n} \\
+p_{21} &amp; p_{22} &amp; \dots &amp; p_{2n} \\
+\dots &amp; \dots &amp; \dots &amp; \dots \\
+p_{n1} &amp; p_{n2} &amp; \dots &amp; p_{nn}
+\end{array}
+\right)
+\end{align*}
+\]</span> 由平稳分布 <span class="math inline">\(\mathbf{\pi} = \mathbf{\pi P}\)</span> 得流量方程为： <span class="math display">\[
+r^T = r^T \cdot P \quad or \quad r=P^T \cdot r
+\]</span> r是状态转移矩阵的平稳分布. 其中 <span class="math inline">\(r_j = (r^T \mathbf{P})_j = \sum\limits_{i=1}^{n} p_{ij} r_i\)</span>.</p>
+<h2 id="pagerank算法">PageRank算法</h2>
+<p>因此，求解图中顶点的PageRank值只需求解概率转移矩阵P的特征值1对应的左特征向量. 可以根据幂法求解，伪代码如下：</p>
+<p><img src="PageRank1.png" style="zoom:80%;float:middle;" /></p>
+<p>由于实际中Web图非常大且每轮迭代的计算复杂度为<span class="math inline">\(O(|V|^2)\)</span>，因此该算法是不可行的. 由于概率转移矩阵P是一个稀疏矩阵，因此对该算法改进如下：</p>
+<p><img src="PageRank2.png" style="zoom:80%;float:middle;" /></p>
+<p>该算法的复杂度为<span class="math inline">\(O(N|E|)\)</span>，其中N为算法迭代次数，<span class="math inline">\(|E|\)</span>为边的集合的模. 算法7.1直接使用邻接矩阵计算，而算法7.2使用邻接表进行计算，其空间和时间效率都比较高.</p>
+<p>为了使算法能够收敛，则概率转移矩阵P必须存在平稳分布. 然而现实中的Web图对应的随机游走不一定存在平稳分布，即使存在，其平稳分布也不一定唯一.</p>
+<blockquote>
+<p>注意算法7.1的第5行和算法7.2的第6行以及PageRank值的定义，新的PageRank值并不是在旧的上面进行更新，而是直接取代旧的PageRank值.</p>
+</blockquote>
+<h2 id="非收敛情况">非收敛情况</h2>
+<p>一、 存在多个连通分量</p>
+<p><img src="pagerank.1.png" style="zoom:80%;float:middle;" /></p>
+<p>例如上图所示，该图存在平稳分布<span class="math inline">\((0.4,0.6,0,0)\)</span>和<span class="math inline">\((0,0,0.5,0.5)\)</span>. 尽管其存在平稳分布，但却不唯一，会导致结果不收敛.</p>
+<p>二、Dead Ends</p>
+<p><img src="pagerank.2.png" style="zoom:80%;float:middle;" /></p>
+<p>在该图中，顶点3每轮迭代都继承来自顶点1和顶点2的PageRank值，但是却没有向系统中返回PageRank值，导致发生“泄漏”，最终算法会收敛到<span class="math inline">\((0,0,0)\)</span>，但是这并不是平稳分布.</p>
+<p>三、Spider Traps</p>
+<p><img src="pagerank.3.png" style="zoom:80%;float:middle;" /></p>
+<p>与Dead Ends不同的是，顶点3此时向系统中返回PageRank值，但是只返回给自己，这导致系统中的流量最终全部汇聚到顶点3.</p>
+<h2 id="解决方法">解决方法</h2>
+<p>为了保证输入的图是不可约、反周期的，Google提出了如下改进方法：当用户访问某个网页时，有两种选择</p>
+<ul>
+<li>以概率 <span class="math inline">\(\beta\)</span> 按照链接关系浏览</li>
+<li>以概率 <span class="math inline">\(1-\beta\)</span> 随机跳转到任意一个其它的网页进行浏览</li>
+<li>通常概率 <span class="math inline">\(\beta = 0.85 \quad or \quad 0.9\)</span></li>
+</ul>
+<p>此时，原Web图对应的概率矩阵为 <span class="math display">\[
+\begin{align*}
+\mathbf{P} = [p_{ij}] \quad and \quad 
+p_{ij} = 
+\left\{ 
+\begin{array}{ll}
+\dfrac{1}{N(i)}, &amp; \text{如果网页i有指向网页j的锚链接} \\
+0, &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span> 经过修正后的概率转移矩阵为： <span class="math display">\[
+\widetilde{\mathbf{P}} = \beta \mathbf{P} + （1-\beta)[\dfrac{1}{n}]_{n \times n}
+\]</span> 其中 <span class="math inline">\([\frac{1}{n}]_{n \times n}\)</span> 表示每个元素都为 <span class="math inline">\(\frac{1}{n}\)</span> 的 <span class="math inline">\(n \times n\)</span> 的方阵.</p>
+<blockquote>
+<p>但是网页中可能存在 Dead Ends，因此<span class="math inline">\(\mathbf{P}\)</span>中可能存在某一行全部为0 的情况. 那么矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 还是概率转移矩阵么？</p>
+</blockquote>
+<p>然而此时原来的稀疏矩阵变为了稠密矩阵，需要消耗巨大的存储空间和计算性能. 因此，需要继续进行优化，而 <span class="math display">\[
+\begin{align*}
+r_j &amp;= \sum_{i=1}^{n} \widetilde{P_{ij}}r_i \\
+&amp;= \sum_{i=1}^{n} (\beta P_{ij} + \dfrac{1-\beta}{n})r_i \\
+&amp;= \sum_{i=1}^{n} \beta P_{ij} r_i + \sum_{i=1}^{n} \dfrac{1-\beta}{n} r_i \\
+&amp;= \sum_{i=1}^{n} \beta P_{ij} r_i + \dfrac{1-\beta}{n}
+\end{align*}
+\]</span> 因此得到一个新的计算平稳分布的公式： <span class="math display">\[
+\mathbf{r}^T = \beta \mathbf{r}^T \cdot \mathbf{P} + [\dfrac{1-\beta}{n}]_n
+\]</span> <span class="math inline">\([\dfrac{1-\beta}{n}]_n\)</span> 表示每个元素都为<span class="math inline">\(\dfrac{1-\beta}{n}\)</span> 的 n 维向量. 修改后的算法为：</p>
+<p><img src="PageRank3.png" style="zoom:70%;float:middle;" /></p>
+<h2 id="收敛性分析">收敛性分析</h2>
+<ol type="1">
+<li><p>矩阵<span class="math inline">\(\widetilde{\mathbf{P}}\)</span>是概率转移矩阵吗？</p>
+<p>修改后的概率矩阵为 <span class="math display">\[
+\widetilde{\mathbf{P}} = \beta \mathbf{P} + (1-\beta)\dfrac{1}{n}\mathbf{ee}^T
+\]</span> 概率矩阵<span class="math inline">\(\mathbf{P}\)</span>行和为1<strong>（真的么？）</strong>，矩阵 <span class="math inline">\(\frac{1}{n} \mathbf{ee}^T\)</span> 中行和也为1，因此矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 中行和也为1，因此该矩阵是转移概率矩阵.</p>
+<blockquote>
+<p>上面的算法中有提到</p>
+</blockquote></li>
+<li><p>概率转移矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 对应的随机游走是不可约的吗？</p>
+<p>是不可约的. 加入随机跳转后，可以保证矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 中每个元素值均大于0，因此 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 所对应的有向图中每两个顶点之间都存在有向边，因此是不可约的.</p></li>
+<li><p>概率转移矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 对应的随机游走是反周期的吗？</p>
+<p>是反周期的. 由于矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 每个元素的值军均大于0，因此其所对应的随机游走有自循环，因此矩阵 <span class="math inline">\(\widetilde{\mathbf{P}}\)</span> 对应的随机游走是反周期的.</p></li>
+</ol>
+<h1 id="小结">小结</h1>
+<p>PageRank是对图中顶点进行排序的算法，但是它仅仅考虑顶点之间的链接关系. 如果进一步考虑用户查询历史，用户兴趣爱好等，需要进一步改进PageRank算法<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. 此外，对于二分图中顶点排序的问题，由于把二分图看作一个随机游走是周期性的，没有唯一的平稳分布，因此PageRank不能直接处理，对此，又有人提出了HITS<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>，BiPank<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a><a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>，BiNE<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>等算法.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>Eneko Agirre and Aitor Soroa. Personalizing pagerank for word sense disambiguation. In Proceedings of the 12th Conference of the European Chapter of the Association for Computational Linguistics, pages 33–41. Association for Computational Linguistics, 2009.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>Taher H Haveliwala. Topic-sensitive pagerank. In Proceedings of the 11th international conference on World Wide Web, pages 517–526. ACM, 2002.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>Chris Ding, Xiaofeng He, Parry Husbands, Hongyuan Zha, and Horst Simon. Pagerank, hits and a unified framework for link analysis. In Proceedings of the 2003 SIAM International Conference on Data Mining, pages 249–253. SIAM, 2003.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>Xiangnan He, Ming Gao, Min-Yen Kan, Yiqun Liu, and Kazunari Sugiyama. Predicting the popularity of web 2.0 items based on user comments. In The 37th International ACM SIGIR Conference on Research and Development in Information Retrieval, SIGIR ’14, Gold Coast, QLD, Australia - July 06 - 11, 2014, pages 233–242, 2014.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>Xiangnan He, Ming Gao, Min-Yen Kan, and Dingxian Wang. Birank: Towards ranking on bipartite graphs. IEEE Transactions on Knowledge and Data Engineering, 29(1):57–71, 2016.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p>Ming Gao, Leihui Chen, Xiangnan He, and Aoying Zhou. Bine: Bipartite network embedding. In The 41st International ACM SIGIR Conference on Research &amp; Development in Information Retrieval, SIGIR 2018, Ann Arbor, MI, USA, July 08-12, 2018, pages 715–724, 2018.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+]]></content>
+      <categories>
+        <category>Algorithm</category>
+      </categories>
+      <tags>
+        <tag>Algorithm</tag>
+        <tag>random walk</tag>
+        <tag>PageRank</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Sketch</title>
+    <url>/Sketch/</url>
+    <content><![CDATA[<h1 id="数据流模型">数据流模型</h1>
+<p><strong>数据流特征：</strong></p>
+<ol type="1">
+<li>数据总量不受限制</li>
+<li>数据到达速率快</li>
+<li>数据到达次序不受约束</li>
+<li>除非刻意保存，否则每条数据只能访问一次</li>
+</ol>
+<a id="more"></a>
+<p><strong>动态数据流算法面临的挑战：</strong></p>
+<ol type="1">
+<li>实时性</li>
+<li>低空间复杂度</li>
+<li>结果准确性</li>
+<li>适应性 — 多流应用场景中，设计适应性算法，根据各个数据流的变化及时调整算法参数</li>
+</ol>
+<p><strong>数据流子模型：</strong></p>
+<p>数据流是如下的一个数据序列： <span class="math display">\[
+\mathcal{S} = s_1, s_2, \dots ,s_m, \dots
+\]</span> 每一个数据项S<sub>i</sub>都是全集U中的一个元素，并且<span class="math inline">\(|U|=n\)</span>. 一个数据流算法把<span class="math inline">\(\mathcal{S}\)</span>作为一个输入并且需要计算<span class="math inline">\(\mathcal{S}\)</span>上的函数 f. 通常情况下，这些数据只能以“流式”访问，比如，我们不能以另一种顺序访问输入的数据流，并且，绝大多数情况下每个数据项只能访问一次.</p>
+<p>考虑一个n维向量<span class="math inline">\(\mathbf{A}=&lt;A[1],A[2],\dots,A[n]&gt;\)</span>，在时刻 0 初始化为<span class="math inline">\(\mathbf{0}\)</span>向量，即对任意i，有<span class="math inline">\(A_0[i]=0\)</span>，且其在时刻 t 的状态为<span class="math inline">\(\mathbf{A}_t = &lt;A_t[1],A_t[2],\dots,A_t[n]&gt;\)</span>. 对向量<span class="math inline">\(\mathbf{A}\)</span>的更新以二元组流的形式出现，即对于 t 时刻的更新<span class="math inline">\((j,c_t)\)</span>，有<span class="math inline">\(A_t[i] = A_{t-1}[i] + c_t\)</span>，如果<span class="math inline">\(i=j\)</span>，否则的话<span class="math inline">\(A_t[i]=A_{t-1}[i]\)</span>.</p>
+<p>通常有下面三种模型：</p>
+<ol type="1">
+<li><p><strong>时间序列模型Time-Series Model</strong> — 每个数据项按照时间顺序到达，这种情况下j=t，即到达的更新为<span class="math inline">\((t,c_t)\)</span>，此时有<span class="math inline">\(A[i]=s_i\)</span>，即每到达的数据都是一个新的数据项，直接将其添加至向量<span class="math inline">\(\mathbf{A}\)</span>中.</p></li>
+<li><p><strong>收银机模型Cash Register Model</strong> — 到达的数据项s<sub>i</sub>是A<sub>i</sub>的增量. 此时到达的更新<span class="math inline">\(s_i = (j,c_t)\)</span>，且c<sub>t</sub>&gt;0，这表示对同一属性的数据的相加，此时有 <span class="math display">\[
+\begin{align*}
+A_t[i] = 
+\left\{ 
+\begin{array}{ll}
+\quad A_{t-1}[i] + c_t, &amp; if \quad j = i \\
+\quad A_{t-1}[i] , &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span></p>
+<blockquote>
+<p>个人理解：对于新到达的更新<span class="math inline">\((j,c_t)\)</span>，如果j已经在向量A中了，那么对<span class="math inline">\(A[j]\)</span>增加c<sub>t</sub>，否则的话向量A中新增一个维度<span class="math inline">\(A[j]\)</span>.</p>
+<p>对应于该模型的名字来讲，就是收银机对于到达的相同面值的纸币将其数量增加1，否则增加一种新的面值的纸币.（c<sub>t</sub>通常为1）</p>
+</blockquote></li>
+<li><p><strong>十字转盘模型Turnstile Model</strong> — 到达的数据项 s<sub>i</sub> 是A<sub>i</sub> 的更新，可能增加也可能减少. 对于此时到达的更新<span class="math inline">\(s_i=(j,c_t)\)</span>，表示对同一属性的数据的更新，此时有 <span class="math display">\[
+\begin{align*}
+A_t[i] = 
+\left\{ 
+\begin{array}{ll}
+\quad A_{t-1}[i] + c_t, &amp; if \quad j = i \\
+\quad A_{t-1}[i] , &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span> 其中c<sub>t</sub> 可能为正可能为负.</p>
+<blockquote>
+<p>对于每次到达的更新，对同一属性的数据可能增加也可能减少，来源于地铁站中的十字转门，通过此转门，地铁站中的人员可能增多也可能减少.</p>
+</blockquote></li>
+</ol>
+<p>除了按照向量A的不同变化分为以上三组外，还可以根据数据流中各个元素的重要性划分为三种子模型：界标模型Landmark Model，滑动窗口模型Sliding Window Model，衰减窗口模型Damped Window Model.</p>
+<ul>
+<li><strong>界标模型</strong> — 仅考虑从某一特定时间点 t 开始到当前时间点 d 之间即 <span class="math inline">\([t\dots d-1]\)</span> 的所有数据，在范围 <span class="math inline">\([0,t)\)</span> 之间的数据不做考虑</li>
+<li><strong>滑动窗口模型</strong> — 另W为窗口大小，当前时间点为 d，那么只考虑$ [max(0,d-W), d-1]$，处于查询范围之外的数据重要性为0</li>
+<li><strong>衰减窗口模型</strong> — 数据流算法的范围为 <span class="math inline">\([0,d-1]\)</span>，但是处于查询范围中的各个元素的重要程度是不同的，新到达的元素其重要程度较高，到达时间较长的元素其重要程度较低</li>
+</ul>
+<p><img src="data_streaming_model.png" style="zoom:67%;" /></p>
+<h1 id="近似算法">近似算法</h1>
+<p><strong><span class="math inline">\(\epsilon\)</span>-近似算法</strong>（相对误差）</p>
+<p>给定输入流 <span class="math inline">\(\sigma\)</span> 和精确输出 <span class="math inline">\(\mathcal{E}(\sigma)\)</span>，近似算法的输出记为 <span class="math inline">\(\mathcal{A}(\sigma)\)</span>. 该算法被称为<span class="math inline">\(\epsilon\)</span>-近似算法，如果满足 <span class="math display">\[
+|\mathcal{A}(\sigma) -\mathcal{E}(\sigma)|\lt \epsilon\mathcal{E}(\sigma)
+\]</span> <strong><span class="math inline">\(\epsilon\)</span>-近似算法</strong>（绝对误差）</p>
+<p>给定输入流 <span class="math inline">\(\sigma\)</span> 和精确输出 <span class="math inline">\(\mathcal{E}(\sigma)\)</span>，近似算法的输出记为 <span class="math inline">\(\mathcal{A}(\sigma)\)</span>. 该算法被称为<span class="math inline">\(\epsilon\)</span>-近似算法，如果满足 <span class="math display">\[
+|\mathcal{A}(\sigma) -\mathcal{E}(\sigma)|\lt \epsilon
+\]</span> <strong><span class="math inline">\((\epsilon,\delta)\)</span>-近似算法</strong>（相对误差）</p>
+<p>给定输入流 <span class="math inline">\(\sigma\)</span> 和精确输出 <span class="math inline">\(\mathcal{E}(\sigma)\)</span>，近似算法的输出记为 <span class="math inline">\(\mathcal{A}(\sigma)\)</span>. 该算法被称为<span class="math inline">\((\epsilon,\delta)\)</span>-近似算法，如果满足 <span class="math display">\[
+P[|\mathcal{A}(\sigma)-\mathcal{E}(\sigma)|\lt \epsilon\mathcal{E}(\sigma)] \gt 1-\delta
+\]</span> <strong><span class="math inline">\((\epsilon,\delta)\)</span>-近似算法</strong>（绝对误差）</p>
+<p>给定输入流 <span class="math inline">\(\sigma\)</span> 和精确输出 <span class="math inline">\(\mathcal{E}(\sigma)\)</span>，近似算法的输出记为 <span class="math inline">\(\mathcal{A}(\sigma)\)</span>. 该算法被称为<span class="math inline">\((\epsilon,\delta)\)</span>-近似算法，如果满足 <span class="math display">\[
+P[|\mathcal{A}(\sigma)-\mathcal{E}(\sigma)|\lt \epsilon] \gt 1-\delta
+\]</span></p>
+<h1 id="频繁项挖掘">频繁项挖掘</h1>
+<p><strong>数据项频数</strong></p>
+<p>在数据流 <span class="math inline">\(\sigma=&lt;a_1,a_2,\dots,a_m&gt;, a_i \in [n]\)</span> 中，定义一个频数向量<br />
+<span class="math display">\[
+f=(f_1,f_2,\dots,f_n)
+\]</span> 其中n为该数据流中不同元素的个数，f<sub>i</sub>为元素a<sub>i</sub>的频数，且满足<span class="math inline">\(\sum\limits_{i=1}^{n} f_i = m\)</span>.</p>
+<p>得到频数后，可以找出满足需求的元素，比如频繁项，该问题分为两类：</p>
+<ul>
+<li><strong>大多数问题</strong>：如果<span class="math inline">\(\exists a_j: f_j \gt \dfrac{m}{2}\)</span>，则输出a<sub>j</sub>，否则输出<span class="math inline">\(\emptyset\)</span>.</li>
+<li><strong>频繁项</strong>：给定一个参数 k，输出频繁元素集合 <span class="math inline">\(\{a_j:f_j \geqslant \dfrac{m}{K}\}\)</span>；或者给定一个参数<span class="math inline">\(\psi\)</span>，输出频繁元素集合<span class="math inline">\(\{a_j:f_j\gt \psi m\}\)</span>.</li>
+</ul>
+<p>下面是两种计算频数的方法：<strong>确定性近似算法</strong>和<strong>随机近似算法</strong>.</p>
+<h1 id="misra-gries算法">Misra-Gries算法</h1>
+<p><strong>Misra-Gries算法过程</strong></p>
+<p>Misra和Gries受俄罗斯方块游戏的启发，与1982年提出了确定性频数估计方法，是一种确定性求解频繁元素的近似算法.</p>
+<p>该算法使用k个计数器，对于到达的元素a<sub>m</sub>，如果已经为其创建了计数器，则将其计数器的值加1，否则为该元素分配一个新的计数器并将其置为1；如果当前计数器的个数为k，则把所有计数器减1，然后删除值为0的计数器.</p>
+<p><img src="Misra-Gries-Algorithm.png" style="zoom:90%;" /></p>
+<p><strong>例：</strong>假设到达的数据流：&lt;a, b, a, c, d, e, a, d&gt;，使用Misra-Gries算法计算频繁项的过程如下：</p>
+<p><img src="Misra-Gries-ex.png" alt="Misra-Gries算法实例" style="zoom:110%;" /></p>
+<p><strong>Misra-Gries算法分析</strong></p>
+<p>输入流有n个元素，计数器为k时，只有频数不小于<span class="math inline">\(\lceil \dfrac{n}{k} \rceil\)</span> 的才是频繁元素，可以看到Misra-Gries算法返回结果中可能包含非频繁项.</p>
+<p><strong>定理：</strong> 对于元素a，通过Misra-Gries算法估计出的频数 <span class="math inline">\(\hat{f_a}\)</span> 与真实值 f<sub>a</sub> 之间满足 <span class="math inline">\(f_a - \dfrac{m - m&#39;}{k} \leqslant \hat{f_a} \leqslant f_a\)</span> 的关系，其中 m 是数据流中所有元素出现的次数之和，m' 是当前所有计数器之和.</p>
+<p><strong>Proof: </strong> 不等式右边显然成立，因为计数器满之后会进行减1操作.<br />
+在整个算法执行过程中，只有当k个计数器都大于等于1时才进行减1操作，每次共减去k. 因此 <span class="math inline">\(m-m&#39;\)</span> 即为减去的1的总和，<span class="math inline">\(\dfrac{m-m&#39;}{k}\)</span> 即为计数器进行减去操作的次数，那么对一个元素频数的估计值与真实值之间最多相差<span class="math inline">\(\dfrac{m-m&#39;}{k}\)</span>，因此<span class="math inline">\(f_a - \dfrac{m-m&#39;}{k} \leqslant \hat{f_a}\)</span>.</p>
+<p>因此，当数据流中不同元素的个数远大于<span class="math inline">\(\frac{m-m&#39;}{k}\)</span>时，Misra-Gries算法可以给出较好的频数估计，误差与k称反比. k 越大，误差越小，但是需要的内存消耗也越大，因此需要在两者之间估计.</p>
+<blockquote>
+<p>为什么数据流中不同元素个数远大于<span class="math inline">\(\frac{m-m&#39;}{k}\)</span>时可以给出较好的估计呢？附加一些我的理解：当数据流大小固定、计数器个数固定时，数据流中不同元素的个数越多，<span class="math inline">\(\frac{m-m&#39;}{k}\)</span>的值越大，<span class="math inline">\(f_a-\frac{m-m&#39;}{k}\)</span>越小但是估计值<span class="math inline">\(\hat{f_a}\)</span>却越接近真实值<span class="math inline">\(f_a\)</span>. (是这样的么？有时间在写个程序验证一下吧)</p>
+</blockquote>
+<blockquote>
+<p>额，有位同学和我说，因为减去的次数多了，所以那些不是那么频繁的项被减去的可能性就提高了，因此最后给出的频繁项就更加准确了，好像有点道理哈.</p>
+</blockquote>
+<h1 id="简单抽样算法">简单抽样算法</h1>
+<p>基本思想是对于到达的元素a<sub>i</sub>，以<span class="math inline">\(p=\frac{M}{m}\)</span>的概率对该元素的频数加1. 其中M为抽样后数据流大小，m为原数据流大小.</p>
+<p>该算法的两个操作:</p>
+<ul>
+<li>Update： 当元素a<sub>i</sub>到达时，以概率p更新c<sub>i</sub>的值；以概率1-p保持不变</li>
+<li>Estimate：返回元素频数数组，其中每个元素的频数为<span class="math inline">\(\hat{f_i} = \dfrac{c_i}{p}\)</span></li>
+</ul>
+<p><img src="Sample-Sample-Algorithm.png" style="zoom:90%;" /></p>
+<p><strong>分析</strong></p>
+<p><strong>定理：</strong> 简单抽样算法成为<span class="math inline">\((\epsilon , \delta)\)</span>-近似算法的空间需求是<span class="math inline">\(M=O(\dfrac{m \log \frac{1}{\delta}}{\epsilon^2})\)</span>，其中，m为原数据流大小，<span class="math inline">\(\epsilon\)</span>为误差因子，<span class="math inline">\(\delta\)</span>是控制误差在一定范围的尾概率上界.</p>
+<p><strong>Proof:</strong> 设c<sub>i</sub>为简单抽样算法给出的元素频数估计值，元素a<sub>i</sub>的频数估计值<span class="math inline">\(\hat{f_i}=\dfrac{c_i}{p}\)</span>. 使用Chernoff不等式有 <span class="math display">\[
+\begin{align*}
+P(|\hat{f_i}-f_i|\geqslant \epsilon f_i) &amp;= P(|c_i-pf_i| \geqslant \epsilon p f_i) \\
+&amp;= P(|\dfrac{c_i}{f_i}-p| \geqslant \epsilon p)\\
+&amp; \leqslant 2 e^{-p \epsilon^2/4} &lt; \delta
+\end{align*}
+\]</span> 由于<span class="math inline">\(p=\frac{M}{m}\)</span>，代入得 <span class="math display">\[
+M &gt; \dfrac{4m \ln(\frac{2}{\sigma})}{\epsilon^2}
+\]</span> 可以看出简单抽样算法的空间需求为<span class="math inline">\(M=O(\dfrac{4m \ln(\frac{2}{\sigma})}{\epsilon^2})\)</span>，与其数据流大小有关，当数据流规模较大时所需的空间也大幅增加. 除此之外，该算法对于每个到达的数据都要进行一次随机操作，会消耗较高的计算资源，而且当数据流大小未知时，无法得出 p 值（p 值应该没有什么太大关系，可以事先指定说前30%为频繁项，那么p=0.3——2021/1/20）.</p>
+<h1 id="basic-count-sketch">Basic Count Sketch</h1>
+<p><strong>Basic Count Sketch算法</strong></p>
+<p><img src="basic-count-sketch-eg.png" style="zoom:100%;" /></p>
+<p>该算法维护一个计数数组C和两个哈希函数 h、g. 哈希函数 h 将 n 个元素均匀地映射到 k 个位置，哈希函数 g 将 n 个元素映射为-1或+1. 对于一个新到达的元素，将其位置上的计数器加1或减1. 对于查询元素 a，估计出的频数为 <span class="math inline">\(\hat{f_a} = g(a) \cdot C[h(a)]\)</span>.</p>
+<p><img src="Basic-Count-Sketch.png" style="zoom:100%;" /></p>
+<p><strong>分析</strong></p>
+<p>对于每一个 <span class="math inline">\(j \in [n]\)</span>，根据哈希函数 h 的结果，定义一个指示变量 Y<sub>j</sub> 如下： <span class="math display">\[
+\begin{align*}
+Y_j = \left\{ 
+\begin{array}{ll}
+1, &amp; \text{如果$h(j)=h(a)$} \\
+0, &amp; \text{其他.}
+\end{array}
+\right.
+\end{align*}
+\]</span> <span class="math inline">\(Y_j=1\)</span> 表示元素 j 与元素 a 被哈希到了同一位置，因此元素 j 对计数器 C[h(a)] 有贡献，否则表示这两个元素没有被哈希到同一位置.</p>
+<p>对于元素a的频数估计取决于计数器 h(a) 位置的值，因此，所有被哈希到 h(a) 位置的元素都对a的频数估计起到了贡献，因此： <span class="math display">\[
+\begin{align*}
+\hat{f_a} &amp;= g(a) C[h(a)] \\
+&amp;= g(a) \sum_{j=1}^{n} g(j) \cdot f_j \cdot Y_j \\
+&amp;= f_a + g(a)\sum_{j \in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \\
+\end{align*}
+\]</span> 估计值的期望为： <span class="math display">\[
+\begin{align*}
+E[\hat{f_a}] &amp;= f_a + g(a) \sum_{j \in [n] \backslash \{a\}} f_i \cdot E(g(j) \cdot Y_j) \\
+&amp;= f_a
+\end{align*}
+\]</span> 哈希函数g和h独立，因此<span class="math inline">\(E[g(j) \cdot Y_j] = E[g(j)] \cdot E[Y_j] = 0 \cdot E[Y_j] = 0\)</span>.</p>
+<p>因此，Basic Count Sketch 算法给出的结果是 f<sub>a</sub> 的<strong>无偏估计</strong>.</p>
+<p>接着计算输出结果的方差： <span class="math display">\[
+\begin{align*}
+Var(\hat{f_a}) &amp;= g(a)^2Var\left[\sum_{j\in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \right] \\
+&amp;= g(a)^2 E\left[ \sum_{j\in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \right]^2 - g(a)^2\left( E\left[\sum_{j\in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \right]^2 \right) \\
+&amp;= g(a)^2 E\left[ \sum_{j\in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \right]^2 \\
+&amp;= E \left[ \sum_{j\in [n] \backslash \{a\}} f_j^2 Y_j^2 + \sum_{i \ne j\in [n] \backslash \{a\}} f_if_jg(i)g(j)Y_jY_j \right]
+\end{align*}
+\]</span> 对于<span class="math inline">\(j\in [n] \backslash \{a\}\)</span>，有 <span class="math display">\[
+E[Y_j^2] = E[Y_j] = P(h(j)=h(a)) = \dfrac{1}{k} \qquad \text{伯努利随机变量二阶矩等于一阶矩}
+\]</span> 对于<span class="math inline">\(i \ne j\in [n] \backslash \{a\}\)</span>，有 <span class="math display">\[
+E[g(i)g(j)Y_iY_j] = E[g(i)]E[g(j)]E[Y_iY_j] = 0 \cdot E[Y_iY_j] = 0
+\]</span> 所以 <span class="math display">\[
+Var(\hat{f_a}) = \sum_{j \in [n] \backslash \{a\}} \dfrac{f_j^2}{k} + 0 = \dfrac{||f||^2_2 - f_a^2}{k} \doteq \dfrac{||f_{-a}||_2^2}{k}.
+\]</span> 可以看出，当计数空间增大时，方差随之减小.</p>
+<p>若要使得该算法为<span class="math inline">\((\epsilon,\delta)\)</span>-近似算法，根据Chebyshev不等式，有 <span class="math display">\[
+\begin{align*}
+P[|\hat{f_a}-f_a| \geqslant \epsilon||f||_2] &amp;\leqslant P[|\hat{f_a}-f_a| \geqslant \epsilon ||f_{-a}||_2] \\
+&amp;\leqslant \dfrac{Var(\hat{f_a})}{\epsilon^2 ||f_{-a}||_2^2} = \dfrac{1}{k\epsilon^2} &lt; \delta
+\end{align*}
+\]</span> 因此，需要 <span class="math inline">\(k=O(\dfrac{1}{\epsilon^2 \delta})\)</span>的空间使得<span class="math inline">\(\hat{f_a}\)</span>偏离真实值超过<span class="math inline">\(\epsilon ||f||_2\)</span>的概率小于<span class="math inline">\(\delta\)</span>. 由于其所需要的空间与数据流大小无关，因此是一个可行性算法.</p>
+<h1 id="count-sketch">Count Sketch</h1>
+<p>根据Basic Count Sketch，当计数数组长度为<span class="math inline">\(k=O(\dfrac{1}{\epsilon^2 \delta})\)</span>时，可以获得真实频数的<span class="math inline">\((\epsilon,\delta)\)</span>-近似估计. 将Tug of War技术运用到Sketch中，可以在<span class="math inline">\(k = O(\dfrac{\ln(\frac{1}{\delta})}{\epsilon^2})\)</span>时，得到真实频数的<span class="math inline">\((\epsilon,\delta)\)</span>-近似估计.</p>
+<p><img src="Count-Sketch.png" style="zoom:90%;" /></p>
+<p>Count Sketch 算法在Basic Count Sketch算法的基础上，将哈希函数的个数增加到 t 个，将每个元素都映射到 t 个位置上，再取 t 个位置上频数估计的<strong>中位数</strong>. 同时也有t个哈希函数决定每个位置上加1还是减1.</p>
+<p><img src="Count-Sketch1.png" style="zoom:85%;" /></p>
+<p><strong>分析</strong></p>
+<p>定义如下随机变量： <span class="math display">\[
+\begin{align*}
+Y_i = \left\{ 
+\begin{array}{ll}
+1, &amp; if \quad |\hat{f_a} - f_a| \geqslant \epsilon ||f||_2 \\
+0, &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span> Y<sub>i</sub>=1表示一次Basic Count Sketch算法成功的概率. 设 <span class="math inline">\(\delta = \dfrac{1}{3}\)</span>，即<span class="math inline">\(P(|\hat{f_a}-f_a|\geqslant \epsilon ||f||_2) &lt; \dfrac{1}{3}\)</span>，也即 <span class="math inline">\(P(Y_i = 1) &lt; \dfrac{1}{3}\)</span>. 记 <span class="math inline">\(\mu = E[\sum_i Y_i] \leqslant \dfrac{t}{3}\)</span>，由Chernoff Bound可得 <span class="math display">\[
+\begin{align*}
+P(\sum_iY_i &gt; \dfrac{t}{2}) &amp; \leqslant P(\sum_i Y_i &gt; (1+\dfrac{1}{2})\mu) \\
+&amp; \leqslant e^{-\frac{\mu(\frac{1}{2})^2}{4}}
+\end{align*}
+\]</span></p>
+<p><span class="math display">\[
+e^{-\frac{t}{48}} \leqslant e^{-\frac{\mu(\frac{1}{2})^2}{4}} &lt; \delta
+\]</span></p>
+<p>因此，有<span class="math inline">\(t &gt; 48 \ln \frac{1}{\delta}\)</span>，即 <span class="math inline">\(t=O(\log \frac{1}{\delta})\)</span>. 所以我们可以在<span class="math inline">\(O(\frac{\log 1/\delta}{\epsilon^2})\)</span>的空间复杂度内实现<span class="math inline">\((\epsilon,\delta)\)</span>-近似算法.</p>
+<h1 id="count-min-sketch">Count-Min Sketch</h1>
+<p>Hcount和Count-Min Sketch都是同一种紧凑的概要数据结构，他们放弃了频数的无偏估计，但是获得了更为有效的频数估计算法，它的空间复杂度仅为<span class="math inline">\(O(\frac{\log 1/\delta}{\epsilon})\)</span>.</p>
+<p><img src="Count-Min-Sketch.png" style="zoom:100%;" /></p>
+<p>CM算法需要维护一个宽度为 w，深度为 d 的计数器数组： <span class="math display">\[
+C[1\dots d][1 \dots w]
+\]</span> 初始化时每个元素为0. 另外需要 d 个哈希函数： <span class="math display">\[
+h_i:[n] \rightarrow [w]
+\]</span> 是从<strong>两两独立的哈希函数族</strong>中随机均匀抽取得到的. 一旦 w 和 d 确定下来，CM Sketch所需的空间便可确定.</p>
+<p><img src="Count-Min-Sketch1.png" style="zoom:100%;" /></p>
+<p>每次的更新 c<sub>t</sub> 严格为正，意味着CM Sketch计数器数组中的元素值只会增加，是一种<strong>高估</strong>算法，相比于Count Sketch中，c<sub>t</sub>可正可负，CM Sketch 对应的是收银机模型，而Count Sketch对应的是十字转盘模型.</p>
+<p><strong>分析</strong></p>
+<p>对于给定的元素a和哈希函数 h<sub>i</sub>，定义随机变量 X<sub>i</sub> 表示在第 i 个哈希函数上其他元素对元素 a 的贡献大小. 对于 <span class="math inline">\(j \in [n] \backslash \{a\}\)</span>，定义 Y<sub>i,j</sub> 表示元素 j 在第 i 个哈希函数上与元素 a 冲突与否： <span class="math display">\[
+\begin{align*}
+Y_{i,j} = \left\{ 
+\begin{array}{ll}
+1, &amp; \text{if $h_i(j) = h_i(a),$} \\
+0, &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span></p>
+<p><span class="math display">\[
+X_i = \sum_{j \in [n] \backslash \{a\}} f_i Y_{i,j}
+\]</span></p>
+<p>由期望的性质可得（注意 k 和 w 是相同含义） <span class="math display">\[
+E[X_i] = \sum_{j \in [n] \backslash \{a\}} f_j E[Y_{i,j}] = \sum_{j \in [n] \backslash \{a\}} \dfrac{f_i}{k} = \dfrac{||f||_1 - f_a}{k} = \dfrac{||f_{-a}||_1}{k}
+\]</span> 由于<span class="math inline">\(f_j \geqslant 0\)</span>，所以<span class="math inline">\(X_i \geqslant 0\)</span>，由Markov不等式得 <span class="math display">\[
+P[X_i \geqslant \epsilon||f||_1] \quad \leqslant \quad P[X_i \geqslant \epsilon ||f_{-a}||_1] \quad \leqslant \quad \dfrac{||f_{-a}||_1}{k \epsilon ||f_{-a}||_1} \quad \doteq \quad \dfrac{1}{2}
+\]</span> 因此<span class="math inline">\(k = O(\frac{2}{\epsilon})\)</span>. 以上概率仅是对于一个哈希函数而言，实际上有 d 个哈希函数，若 <span class="math inline">\(\hat{f_a} - f_a \geqslant x\)</span>，则 <span class="math inline">\(\min \{X_1, \dots, X_d \} \geqslant x\)</span>，因此 <span class="math display">\[
+\begin{align*}
+P(\hat{f_a} - f_a \geqslant \epsilon ||f_{-a}||_1) &amp;= P(\min \{X_1, \dots, X_d \} \geqslant \epsilon ||f_{-a}||_1) \\ 
+&amp; = \prod_{i=1}^{d} P(X_i \geqslant \epsilon ||f_{-a}||_1) \\
+&amp; \leqslant \dfrac{1}{2^d}
+\end{align*}
+\]</span> 可以选择适当的d使得 <span class="math display">\[
+P(\hat{f_a} - f_a \geqslant \epsilon ||f_{-a}||_1) \leqslant \dfrac{1}{2^d} \leqslant \delta
+\]</span> 此时<span class="math inline">\(d=O(\log \frac{1}{\delta})\)</span>. 且 <span class="math display">\[
+f_a \leqslant \hat{f_a} \leqslant f_a + \epsilon ||f_{-a}||_1
+\]</span> 所以，CM Sketch 算法需要的计数器个数为<span class="math inline">\(M=O(\dfrac{\log 1/\delta}{\epsilon})\)</span>.</p>
+<blockquote>
+<p>Misra-Gries算法伪代码的LaTeX代码：</p>
+<figure class="highlight latex"><table><tr><td class="code"><pre><span class="line"><span class="keyword">\begin</span>&#123;algorithm&#125;[H]</span><br><span class="line"></span><br><span class="line">  <span class="keyword">\KwIn</span>&#123;<span class="keyword">\text</span>&#123;数据流<span class="built_in">$</span><span class="keyword">\sigma</span>=&lt;a<span class="built_in">_</span>1,a<span class="built_in">_</span>2,<span class="keyword">\dots</span>,a<span class="built_in">_</span>m&gt;<span class="built_in">$</span>, <span class="built_in">$</span>a<span class="built_in">_</span>i <span class="keyword">\in</span> [n]<span class="built_in">$</span>, 正整数k&#125;&#125;</span><br><span class="line">  <span class="keyword">\KwResult</span>&#123;数据流<span class="built_in">$</span><span class="keyword">\sigma</span><span class="built_in">$</span>中的频繁元素集合F&#125;</span><br><span class="line"></span><br><span class="line">  F <span class="built_in">$</span><span class="keyword">\leftarrow</span> <span class="keyword">\emptyset</span><span class="built_in">$</span> <span class="keyword">\;</span></span><br><span class="line">  <span class="keyword">\While</span>&#123;数据流<span class="built_in">$</span><span class="keyword">\sigma</span><span class="built_in">$</span>非空&#125;&#123;</span><br><span class="line">    数据流<span class="built_in">$</span><span class="keyword">\sigma</span><span class="built_in">$</span>中第<span class="built_in">$</span>i<span class="built_in">$</span>个元素到达<span class="keyword">\;</span></span><br><span class="line">    <span class="keyword">\If</span>&#123;<span class="built_in">$</span>a<span class="built_in">_</span>i <span class="keyword">\in</span> keys(F)<span class="built_in">$</span>&#125;&#123;</span><br><span class="line">      <span class="built_in">$</span>F<span class="built_in">_</span>i <span class="keyword">\leftarrow</span> F<span class="built_in">_</span>i + 1<span class="built_in">$</span><span class="keyword">\;</span></span><br><span class="line">      &#125;</span><br><span class="line">    <span class="keyword">\Else</span>&#123;</span><br><span class="line">    <span class="keyword">\tcc</span>&#123;集合F中最多同时存在k-1个元素, 当第k个元素到达时, 先将其放入F中，然后遍历F中元素做减1操作, 最后将值为0的元素清除掉，此时新到达的第k个元素也会被清除掉，相当于最开始便不加入集合F而直接遍历F做减1清零操作, 因此else块不需要有<span class="built_in">$</span>F<span class="built_in">_</span>i <span class="keyword">\leftarrow</span> 1<span class="built_in">$</span>操作&#125;</span><br><span class="line">      <span class="keyword">\If</span>&#123;<span class="built_in">$</span>|keys(F)| &lt; k-1<span class="built_in">$</span>&#125;&#123;</span><br><span class="line">        <span class="built_in">$</span>F<span class="built_in">_</span>i <span class="keyword">\leftarrow</span> 1<span class="built_in">$</span><span class="keyword">\;</span></span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">\Else</span>&#123;</span><br><span class="line">      <span class="keyword">\For</span>&#123;<span class="built_in">$</span>a<span class="built_in">_</span>j <span class="keyword">\in</span> keys(F)<span class="built_in">$</span>&#125;&#123;</span><br><span class="line">          <span class="built_in">$</span>F<span class="built_in">_</span>j <span class="keyword">\leftarrow</span> F<span class="built_in">_</span>j - 1<span class="built_in">$</span><span class="keyword">\;</span></span><br><span class="line">          <span class="keyword">\If</span>&#123;<span class="built_in">$</span>F<span class="built_in">_</span>j=0<span class="built_in">$</span>&#125;&#123;</span><br><span class="line">            从<span class="built_in">$</span>F<span class="built_in">$</span>中移除<span class="built_in">$</span>a<span class="built_in">_</span>j<span class="built_in">$</span><span class="keyword">\;</span>&#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">\KwRet</span>&#123;频数估计数组F&#125;</span><br><span class="line"><span class="keyword">\caption</span>&#123;Misra-Greis算法&#125;<span class="keyword">\label</span>&#123;algorithm&#125;</span><br><span class="line"><span class="keyword">\end</span>&#123;algorithm&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Algorithm</category>
+      </categories>
+      <tags>
+        <tag>Algorithm</tag>
+        <tag>Sketch</tag>
       </tags>
   </entry>
 </search>

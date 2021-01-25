@@ -188,7 +188,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/%E6%B5%8B%E8%AF%95/">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Random-Walk-and-PageRank/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpeg">
@@ -202,7 +202,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/%E6%B5%8B%E8%AF%95/" class="post-title-link" itemprop="url">测试</a>
+            <a href="/Random-Walk-and-PageRank/" class="post-title-link" itemprop="url">Random Walk and PageRank</a>
         </h2>
 
         <div class="post-meta">
@@ -213,7 +213,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-01-25 10:42:52 / 修改时间：10:53:36" itemprop="dateCreated datePublished" datetime="2021-01-25T10:42:52+08:00">2021-01-25</time>
+              <time title="创建时间：2021-01-25 18:48:31 / 修改时间：19:33:33" itemprop="dateCreated datePublished" datetime="2021-01-25T18:48:31+08:00">2021-01-25</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -221,7 +221,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/compute/" itemprop="url" rel="index"><span itemprop="name">compute</span></a>
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
                 </span>
             </span>
 
@@ -236,13 +236,19 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="hashing">Hashing</h1>
-<h2 id="介绍">介绍</h2>
-<p>在记录的关键字与记录的存储地址之间建立的对应关系叫做Hash函数。Hash函数是一种映射，是从关键字到存储地址之间的映射，它可以使得每个关键字 <span class="math inline">\(key\)</span> 都有唯一的存储位置 <span class="math inline">\(h(key)\)</span> 与之对应，因此一旦建立了这种对应关系，就可以在 <span class="math inline">\(O(1)\)</span> 的时间复杂度找到与关键字匹配的记录所在的存储位置。</p>
-<p>采用Hash技术将记录存储在一块连续的空间中，这块存储空间称为<strong>哈希表 Hash Table</strong>，将关键字与存储位置形成映射的函数称为<strong>Hash 函数</strong>，得到的存储位置称为<strong>Hash 地址</strong>。
+          <h1 id="引子">引子</h1>
+<p><strong>联合概率</strong></p>
+<p><strong>定义：</strong> 给定n个随机变量X<sub>1</sub>, X<sub>2</sub>, ..., X<sub>n</sub>，分别取值为x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>n</sub> 的联合概率 <span class="math inline">\(f(x_1,x_2,\dots,x_n)\)</span>表示为 <span class="math display">\[
+f(x_1,x_2,\dots,x_n)=P(X_1=x_1,X_2=x_2,\dots,X_n=x_n)
+\]</span> 若n个随机变量是相互独立的，那么其联合概率可以很方便地计算为 <span class="math display">\[
+\begin{align*}
+f(x_1,x_2,\dots,x_n) &amp;= P(X_1=x_1,X_2=x_2,\dots,X_n=x_n) \\
+&amp;= \prod_{i=1}^{n} P(X_i=x_i) = \prod_{i=1}^{n} f_{X_i}(x_i)
+\end{align*}
+\]</span> 然而通常情况下，数据之间并不总是独立的，比如对于声音，文本数据，其前后之间是有一定联系的.</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/%E6%B5%8B%E8%AF%95/#more" rel="contents">
+              <a class="btn" href="/Random-Walk-and-PageRank/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -266,7 +272,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/index/">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Sketch/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpeg">
@@ -280,7 +286,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/index/" class="post-title-link" itemprop="url">index</a>
+            <a href="/Sketch/" class="post-title-link" itemprop="url">Sketch</a>
         </h2>
 
         <div class="post-meta">
@@ -289,23 +295,17 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2021-01-23 22:08:09" itemprop="dateCreated datePublished" datetime="2021-01-23T22:08:09+08:00">2021-01-23</time>
+              <time title="创建时间：2021-01-25 18:48:12 / 修改时间：19:29:30" itemprop="dateCreated datePublished" datetime="2021-01-25T18:48:12+08:00">2021-01-25</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-24 00:04:12" itemprop="dateModified" datetime="2021-01-24T00:04:12+08:00">2021-01-24</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/test/" itemprop="url" rel="index"><span itemprop="name">test</span></a>
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
                 </span>
             </span>
 
@@ -320,12 +320,22 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p><span class="math display">\[\begin{align}
-a &amp;= b + c  \\
-x &amp;= yz\\
-l &amp;= m - n
-\end{align}\]</span></p>
-
+          <h1 id="数据流模型">数据流模型</h1>
+<p><strong>数据流特征：</strong></p>
+<ol type="1">
+<li>数据总量不受限制</li>
+<li>数据到达速率快</li>
+<li>数据到达次序不受约束</li>
+<li>除非刻意保存，否则每条数据只能访问一次</li>
+</ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/Sketch/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -344,7 +354,7 @@ l &amp;= m - n
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/hello-world/">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Sampling/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpeg">
@@ -358,7 +368,7 @@ l &amp;= m - n
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
+            <a href="/Sampling/" class="post-title-link" itemprop="url">Sampling</a>
         </h2>
 
         <div class="post-meta">
@@ -367,23 +377,17 @@ l &amp;= m - n
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2021-01-23 21:08:09" itemprop="dateCreated datePublished" datetime="2021-01-23T21:08:09+08:00">2021-01-23</time>
+              <time title="创建时间：2021-01-25 18:48:00 / 修改时间：19:23:39" itemprop="dateCreated datePublished" datetime="2021-01-25T18:48:00+08:00">2021-01-25</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-25 10:21:37" itemprop="dateModified" datetime="2021-01-25T10:21:37+08:00">2021-01-25</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/test/" itemprop="url" rel="index"><span itemprop="name">test</span></a>
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
                 </span>
             </span>
 
@@ -398,16 +402,464 @@ l &amp;= m - n
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="quick-start">Quick Start</h2>
-<h3 id="create-a-new-post">Create a new post</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="run-server">Run server</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+          <p>对于传统的静态有限量数据，有许多种抽样的方法，如简单随机抽样等. 但是对于现在的大数据流量，数据往往是以流的形式源源不断的到来，此时不仅仅数据量会很大，而且我们也无法确定数据量的大小，因此对于传统的抽样方法，并不合适我们目前的需求.</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/hello-world/#more" rel="contents">
+              <a class="btn" href="/Sampling/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Locality-Sensitive-Hashing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Locality-Sensitive-Hashing/" class="post-title-link" itemprop="url">Locality Sensitive Hashing</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:47:49 / 修改时间：19:19:09" itemprop="dateCreated datePublished" datetime="2021-01-25T18:47:49+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在文本冗余检测问题中，会面临海量数据和高维数据的挑战，学工界提出的技术大致有<strong>最近邻查找(Nearest Neighbor, NN)</strong>或者<strong>近似最近邻查找(Approximate Nearest Neighbor, ANN)</strong>. 而<strong>局部敏感哈希(LSH)</strong>就是ANN中广泛运用的技术，它是采用哈希技术实现对海量高维数据进行近似最近邻快速查找的一种方法.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/Locality-Sensitive-Hashing/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Bloom-Filter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Bloom-Filter/" class="post-title-link" itemprop="url">Bloom Filter</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:47:16 / 修改时间：19:39:09" itemprop="dateCreated datePublished" datetime="2021-01-25T18:47:16+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="bloom-filter">Bloom Filter</h1>
+<p>布隆过滤器是一个具有空间性的概率数据结构，通常用来判断一个元素是否存在于一个集合中。</p>
+<h2 id="布隆过滤器的性质">布隆过滤器的性质</h2>
+<ul>
+<li><em>纳伪</em>  False Positive是可能的，对于一个不在布隆过滤器中的元素（事件A: 元素不在布隆过滤器中），可能返回存在（拒绝事件A: 返回存在）</li>
+<li><em>拒真</em>  False Negative是不可能的，如果布隆过滤器返回不存在，那么一定不存在</li>
+</ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/Bloom-Filter/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Hash/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Hash/" class="post-title-link" itemprop="url">Hash</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:46:57 / 修改时间：19:19:14" itemprop="dateCreated datePublished" datetime="2021-01-25T18:46:57+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="介绍">介绍</h1>
+<p>在记录的关键字与记录的存储地址之间建立的对应关系叫做Hash函数。Hash函数是一种映射，是从关键字到存储地址之间的映射，它可以使得每个关键字 <span class="math inline">\(key\)</span> 都有唯一的存储位置 <span class="math inline">\(h(key)\)</span> 与之对应，因此一旦建立了这种对应关系，就可以在 <span class="math inline">\(O(1)\)</span> 的时间复杂度找到与关键字匹配的记录所在的存储位置。</p>
+<p>采用Hash技术将记录存储在一块连续的空间中，这块存储空间称为<strong>哈希表 Hash Table</strong>，将关键字与存储位置形成映射的函数称为<strong>Hash 函数</strong>，得到的存储位置称为<strong>Hash 地址</strong>。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/Hash/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Morris-Counting-Algorithm/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Morris-Counting-Algorithm/" class="post-title-link" itemprop="url">Morris Counting Algorithm</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:46:47 / 修改时间：19:10:55" itemprop="dateCreated datePublished" datetime="2021-01-25T18:46:47+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="描述">描述</h1>
+<p>假设我们在网络中有一路由器，它需要根据分组的源和目的地来存储分组的信息。我们想要利用通过路由器的信息来计算某些统计量，比如同一个源IP地址发送了多少次请求。当发生分布式拒绝服务攻击(Distribution Denial of Service, DDoS)时，指向某个目的地址的流量会急剧增加，但是网络交换设备的存储和计算资源十分稀缺，因此当整数n十分大时，怎样才能用更少的空间来近似表示整数n呢？</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/Morris-Counting-Algorithm/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Tail-Probability-Inequality/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Tail-Probability-Inequality/" class="post-title-link" itemprop="url">Tail Probability Inequality</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:46:13 / 修改时间：19:10:40" itemprop="dateCreated datePublished" datetime="2021-01-25T18:46:13+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="概述">概述</h1>
+<h2 id="马尔可夫不等式-markov-inequality">马尔可夫不等式 Markov Inequality</h2>
+<p>If X is any r.v., and <span class="math inline">\(0 \lt a \lt +\infty\)</span>, then <span class="math display">\[
+P(X \gt a) \leqslant \frac{E[X]}{a} \quad or \quad P(X \gt aE[x]) \leqslant \frac{1}{a}
+\]</span></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/Tail-Probability-Inequality/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Github-Pages-Hexo-Next%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/Github-Pages-Hexo-Next%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/" class="post-title-link" itemprop="url">Github Pages + Hexo Next搭建个人博客</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:43:22 / 修改时间：18:44:28" itemprop="dateCreated datePublished" datetime="2021-01-25T18:43:22+08:00">2021-01-25</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>过几天再写 &gt;_&lt;
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/Github-Pages-Hexo-Next%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -495,20 +947,20 @@ l &amp;= m - n
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">9</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">1</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

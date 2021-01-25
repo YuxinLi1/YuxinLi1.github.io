@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Noto Serif SC:300,300italic,400,400italic,700,700italic|Roboto Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yuxinli1.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="数据流模型 数据流特征：  数据总量不受限制 数据到达速率快 数据到达次序不受约束 除非刻意保存，否则每条数据只能访问一次">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sketch">
+<meta property="og:url" content="https://yuxinli1.github.io/Sketch/index.html">
+<meta property="og:site_name" content="Yuxin&#39;s blog">
+<meta property="og:description" content="数据流模型 数据流特征：  数据总量不受限制 数据到达速率快 数据到达次序不受约束 除非刻意保存，否则每条数据只能访问一次">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/data_streaming_model.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/Misra-Gries-Algorithm.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/Misra-Gries-ex.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/Sample-Sample-Algorithm.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/basic-count-sketch-eg.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/Basic-Count-Sketch.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/Count-Sketch.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/Count-Sketch1.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/Count-Min-Sketch.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Sketch/Count-Min-Sketch1.png">
+<meta property="article:published_time" content="2021-01-25T10:48:12.000Z">
+<meta property="article:modified_time" content="2021-01-25T11:29:30.520Z">
+<meta property="article:author" content="Yuxin Li">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="Sketch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yuxinli1.github.io/Sketch/data_streaming_model.png">
+
+<link rel="canonical" href="https://yuxinli1.github.io/Sketch/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Sketch | Yuxin's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Yuxin's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Sketch/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Sketch
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:48:12 / 修改时间：19:29:30" itemprop="dateCreated datePublished" datetime="2021-01-25T18:48:12+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="数据流模型">数据流模型</h1>
+<p><strong>数据流特征：</strong></p>
+<ol type="1">
+<li>数据总量不受限制</li>
+<li>数据到达速率快</li>
+<li>数据到达次序不受约束</li>
+<li>除非刻意保存，否则每条数据只能访问一次</li>
+</ol>
+<a id="more"></a>
+<p><strong>动态数据流算法面临的挑战：</strong></p>
+<ol type="1">
+<li>实时性</li>
+<li>低空间复杂度</li>
+<li>结果准确性</li>
+<li>适应性 — 多流应用场景中，设计适应性算法，根据各个数据流的变化及时调整算法参数</li>
+</ol>
+<p><strong>数据流子模型：</strong></p>
+<p>数据流是如下的一个数据序列： <span class="math display">\[
+\mathcal{S} = s_1, s_2, \dots ,s_m, \dots
+\]</span> 每一个数据项S<sub>i</sub>都是全集U中的一个元素，并且<span class="math inline">\(|U|=n\)</span>. 一个数据流算法把<span class="math inline">\(\mathcal{S}\)</span>作为一个输入并且需要计算<span class="math inline">\(\mathcal{S}\)</span>上的函数 f. 通常情况下，这些数据只能以“流式”访问，比如，我们不能以另一种顺序访问输入的数据流，并且，绝大多数情况下每个数据项只能访问一次.</p>
+<p>考虑一个n维向量<span class="math inline">\(\mathbf{A}=&lt;A[1],A[2],\dots,A[n]&gt;\)</span>，在时刻 0 初始化为<span class="math inline">\(\mathbf{0}\)</span>向量，即对任意i，有<span class="math inline">\(A_0[i]=0\)</span>，且其在时刻 t 的状态为<span class="math inline">\(\mathbf{A}_t = &lt;A_t[1],A_t[2],\dots,A_t[n]&gt;\)</span>. 对向量<span class="math inline">\(\mathbf{A}\)</span>的更新以二元组流的形式出现，即对于 t 时刻的更新<span class="math inline">\((j,c_t)\)</span>，有<span class="math inline">\(A_t[i] = A_{t-1}[i] + c_t\)</span>，如果<span class="math inline">\(i=j\)</span>，否则的话<span class="math inline">\(A_t[i]=A_{t-1}[i]\)</span>.</p>
+<p>通常有下面三种模型：</p>
+<ol type="1">
+<li><p><strong>时间序列模型Time-Series Model</strong> — 每个数据项按照时间顺序到达，这种情况下j=t，即到达的更新为<span class="math inline">\((t,c_t)\)</span>，此时有<span class="math inline">\(A[i]=s_i\)</span>，即每到达的数据都是一个新的数据项，直接将其添加至向量<span class="math inline">\(\mathbf{A}\)</span>中.</p></li>
+<li><p><strong>收银机模型Cash Register Model</strong> — 到达的数据项s<sub>i</sub>是A<sub>i</sub>的增量. 此时到达的更新<span class="math inline">\(s_i = (j,c_t)\)</span>，且c<sub>t</sub>&gt;0，这表示对同一属性的数据的相加，此时有 <span class="math display">\[
+\begin{align*}
+A_t[i] = 
+\left\{ 
+\begin{array}{ll}
+\quad A_{t-1}[i] + c_t, &amp; if \quad j = i \\
+\quad A_{t-1}[i] , &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span></p>
+<blockquote>
+<p>个人理解：对于新到达的更新<span class="math inline">\((j,c_t)\)</span>，如果j已经在向量A中了，那么对<span class="math inline">\(A[j]\)</span>增加c<sub>t</sub>，否则的话向量A中新增一个维度<span class="math inline">\(A[j]\)</span>.</p>
+<p>对应于该模型的名字来讲，就是收银机对于到达的相同面值的纸币将其数量增加1，否则增加一种新的面值的纸币.（c<sub>t</sub>通常为1）</p>
+</blockquote></li>
+<li><p><strong>十字转盘模型Turnstile Model</strong> — 到达的数据项 s<sub>i</sub> 是A<sub>i</sub> 的更新，可能增加也可能减少. 对于此时到达的更新<span class="math inline">\(s_i=(j,c_t)\)</span>，表示对同一属性的数据的更新，此时有 <span class="math display">\[
+\begin{align*}
+A_t[i] = 
+\left\{ 
+\begin{array}{ll}
+\quad A_{t-1}[i] + c_t, &amp; if \quad j = i \\
+\quad A_{t-1}[i] , &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span> 其中c<sub>t</sub> 可能为正可能为负.</p>
+<blockquote>
+<p>对于每次到达的更新，对同一属性的数据可能增加也可能减少，来源于地铁站中的十字转门，通过此转门，地铁站中的人员可能增多也可能减少.</p>
+</blockquote></li>
+</ol>
+<p>除了按照向量A的不同变化分为以上三组外，还可以根据数据流中各个元素的重要性划分为三种子模型：界标模型Landmark Model，滑动窗口模型Sliding Window Model，衰减窗口模型Damped Window Model.</p>
+<ul>
+<li><strong>界标模型</strong> — 仅考虑从某一特定时间点 t 开始到当前时间点 d 之间即 <span class="math inline">\([t\dots d-1]\)</span> 的所有数据，在范围 <span class="math inline">\([0,t)\)</span> 之间的数据不做考虑</li>
+<li><strong>滑动窗口模型</strong> — 另W为窗口大小，当前时间点为 d，那么只考虑$ [max(0,d-W), d-1]$，处于查询范围之外的数据重要性为0</li>
+<li><strong>衰减窗口模型</strong> — 数据流算法的范围为 <span class="math inline">\([0,d-1]\)</span>，但是处于查询范围中的各个元素的重要程度是不同的，新到达的元素其重要程度较高，到达时间较长的元素其重要程度较低</li>
+</ul>
+<p><img src="data_streaming_model.png" style="zoom:67%;" /></p>
+<h1 id="近似算法">近似算法</h1>
+<p><strong><span class="math inline">\(\epsilon\)</span>-近似算法</strong>（相对误差）</p>
+<p>给定输入流 <span class="math inline">\(\sigma\)</span> 和精确输出 <span class="math inline">\(\mathcal{E}(\sigma)\)</span>，近似算法的输出记为 <span class="math inline">\(\mathcal{A}(\sigma)\)</span>. 该算法被称为<span class="math inline">\(\epsilon\)</span>-近似算法，如果满足 <span class="math display">\[
+|\mathcal{A}(\sigma) -\mathcal{E}(\sigma)|\lt \epsilon\mathcal{E}(\sigma)
+\]</span> <strong><span class="math inline">\(\epsilon\)</span>-近似算法</strong>（绝对误差）</p>
+<p>给定输入流 <span class="math inline">\(\sigma\)</span> 和精确输出 <span class="math inline">\(\mathcal{E}(\sigma)\)</span>，近似算法的输出记为 <span class="math inline">\(\mathcal{A}(\sigma)\)</span>. 该算法被称为<span class="math inline">\(\epsilon\)</span>-近似算法，如果满足 <span class="math display">\[
+|\mathcal{A}(\sigma) -\mathcal{E}(\sigma)|\lt \epsilon
+\]</span> <strong><span class="math inline">\((\epsilon,\delta)\)</span>-近似算法</strong>（相对误差）</p>
+<p>给定输入流 <span class="math inline">\(\sigma\)</span> 和精确输出 <span class="math inline">\(\mathcal{E}(\sigma)\)</span>，近似算法的输出记为 <span class="math inline">\(\mathcal{A}(\sigma)\)</span>. 该算法被称为<span class="math inline">\((\epsilon,\delta)\)</span>-近似算法，如果满足 <span class="math display">\[
+P[|\mathcal{A}(\sigma)-\mathcal{E}(\sigma)|\lt \epsilon\mathcal{E}(\sigma)] \gt 1-\delta
+\]</span> <strong><span class="math inline">\((\epsilon,\delta)\)</span>-近似算法</strong>（绝对误差）</p>
+<p>给定输入流 <span class="math inline">\(\sigma\)</span> 和精确输出 <span class="math inline">\(\mathcal{E}(\sigma)\)</span>，近似算法的输出记为 <span class="math inline">\(\mathcal{A}(\sigma)\)</span>. 该算法被称为<span class="math inline">\((\epsilon,\delta)\)</span>-近似算法，如果满足 <span class="math display">\[
+P[|\mathcal{A}(\sigma)-\mathcal{E}(\sigma)|\lt \epsilon] \gt 1-\delta
+\]</span></p>
+<h1 id="频繁项挖掘">频繁项挖掘</h1>
+<p><strong>数据项频数</strong></p>
+<p>在数据流 <span class="math inline">\(\sigma=&lt;a_1,a_2,\dots,a_m&gt;, a_i \in [n]\)</span> 中，定义一个频数向量<br />
+<span class="math display">\[
+f=(f_1,f_2,\dots,f_n)
+\]</span> 其中n为该数据流中不同元素的个数，f<sub>i</sub>为元素a<sub>i</sub>的频数，且满足<span class="math inline">\(\sum\limits_{i=1}^{n} f_i = m\)</span>.</p>
+<p>得到频数后，可以找出满足需求的元素，比如频繁项，该问题分为两类：</p>
+<ul>
+<li><strong>大多数问题</strong>：如果<span class="math inline">\(\exists a_j: f_j \gt \dfrac{m}{2}\)</span>，则输出a<sub>j</sub>，否则输出<span class="math inline">\(\emptyset\)</span>.</li>
+<li><strong>频繁项</strong>：给定一个参数 k，输出频繁元素集合 <span class="math inline">\(\{a_j:f_j \geqslant \dfrac{m}{K}\}\)</span>；或者给定一个参数<span class="math inline">\(\psi\)</span>，输出频繁元素集合<span class="math inline">\(\{a_j:f_j\gt \psi m\}\)</span>.</li>
+</ul>
+<p>下面是两种计算频数的方法：<strong>确定性近似算法</strong>和<strong>随机近似算法</strong>.</p>
+<h1 id="misra-gries算法">Misra-Gries算法</h1>
+<p><strong>Misra-Gries算法过程</strong></p>
+<p>Misra和Gries受俄罗斯方块游戏的启发，与1982年提出了确定性频数估计方法，是一种确定性求解频繁元素的近似算法.</p>
+<p>该算法使用k个计数器，对于到达的元素a<sub>m</sub>，如果已经为其创建了计数器，则将其计数器的值加1，否则为该元素分配一个新的计数器并将其置为1；如果当前计数器的个数为k，则把所有计数器减1，然后删除值为0的计数器.</p>
+<p><img src="Misra-Gries-Algorithm.png" style="zoom:90%;" /></p>
+<p><strong>例：</strong>假设到达的数据流：&lt;a, b, a, c, d, e, a, d&gt;，使用Misra-Gries算法计算频繁项的过程如下：</p>
+<p><img src="Misra-Gries-ex.png" alt="Misra-Gries算法实例" style="zoom:110%;" /></p>
+<p><strong>Misra-Gries算法分析</strong></p>
+<p>输入流有n个元素，计数器为k时，只有频数不小于<span class="math inline">\(\lceil \dfrac{n}{k} \rceil\)</span> 的才是频繁元素，可以看到Misra-Gries算法返回结果中可能包含非频繁项.</p>
+<p><strong>定理：</strong> 对于元素a，通过Misra-Gries算法估计出的频数 <span class="math inline">\(\hat{f_a}\)</span> 与真实值 f<sub>a</sub> 之间满足 <span class="math inline">\(f_a - \dfrac{m - m&#39;}{k} \leqslant \hat{f_a} \leqslant f_a\)</span> 的关系，其中 m 是数据流中所有元素出现的次数之和，m' 是当前所有计数器之和.</p>
+<p><strong>Proof: </strong> 不等式右边显然成立，因为计数器满之后会进行减1操作.<br />
+在整个算法执行过程中，只有当k个计数器都大于等于1时才进行减1操作，每次共减去k. 因此 <span class="math inline">\(m-m&#39;\)</span> 即为减去的1的总和，<span class="math inline">\(\dfrac{m-m&#39;}{k}\)</span> 即为计数器进行减去操作的次数，那么对一个元素频数的估计值与真实值之间最多相差<span class="math inline">\(\dfrac{m-m&#39;}{k}\)</span>，因此<span class="math inline">\(f_a - \dfrac{m-m&#39;}{k} \leqslant \hat{f_a}\)</span>.</p>
+<p>因此，当数据流中不同元素的个数远大于<span class="math inline">\(\frac{m-m&#39;}{k}\)</span>时，Misra-Gries算法可以给出较好的频数估计，误差与k称反比. k 越大，误差越小，但是需要的内存消耗也越大，因此需要在两者之间估计.</p>
+<blockquote>
+<p>为什么数据流中不同元素个数远大于<span class="math inline">\(\frac{m-m&#39;}{k}\)</span>时可以给出较好的估计呢？附加一些我的理解：当数据流大小固定、计数器个数固定时，数据流中不同元素的个数越多，<span class="math inline">\(\frac{m-m&#39;}{k}\)</span>的值越大，<span class="math inline">\(f_a-\frac{m-m&#39;}{k}\)</span>越小但是估计值<span class="math inline">\(\hat{f_a}\)</span>却越接近真实值<span class="math inline">\(f_a\)</span>. (是这样的么？有时间在写个程序验证一下吧)</p>
+</blockquote>
+<blockquote>
+<p>额，有位同学和我说，因为减去的次数多了，所以那些不是那么频繁的项被减去的可能性就提高了，因此最后给出的频繁项就更加准确了，好像有点道理哈.</p>
+</blockquote>
+<h1 id="简单抽样算法">简单抽样算法</h1>
+<p>基本思想是对于到达的元素a<sub>i</sub>，以<span class="math inline">\(p=\frac{M}{m}\)</span>的概率对该元素的频数加1. 其中M为抽样后数据流大小，m为原数据流大小.</p>
+<p>该算法的两个操作:</p>
+<ul>
+<li>Update： 当元素a<sub>i</sub>到达时，以概率p更新c<sub>i</sub>的值；以概率1-p保持不变</li>
+<li>Estimate：返回元素频数数组，其中每个元素的频数为<span class="math inline">\(\hat{f_i} = \dfrac{c_i}{p}\)</span></li>
+</ul>
+<p><img src="Sample-Sample-Algorithm.png" style="zoom:90%;" /></p>
+<p><strong>分析</strong></p>
+<p><strong>定理：</strong> 简单抽样算法成为<span class="math inline">\((\epsilon , \delta)\)</span>-近似算法的空间需求是<span class="math inline">\(M=O(\dfrac{m \log \frac{1}{\delta}}{\epsilon^2})\)</span>，其中，m为原数据流大小，<span class="math inline">\(\epsilon\)</span>为误差因子，<span class="math inline">\(\delta\)</span>是控制误差在一定范围的尾概率上界.</p>
+<p><strong>Proof:</strong> 设c<sub>i</sub>为简单抽样算法给出的元素频数估计值，元素a<sub>i</sub>的频数估计值<span class="math inline">\(\hat{f_i}=\dfrac{c_i}{p}\)</span>. 使用Chernoff不等式有 <span class="math display">\[
+\begin{align*}
+P(|\hat{f_i}-f_i|\geqslant \epsilon f_i) &amp;= P(|c_i-pf_i| \geqslant \epsilon p f_i) \\
+&amp;= P(|\dfrac{c_i}{f_i}-p| \geqslant \epsilon p)\\
+&amp; \leqslant 2 e^{-p \epsilon^2/4} &lt; \delta
+\end{align*}
+\]</span> 由于<span class="math inline">\(p=\frac{M}{m}\)</span>，代入得 <span class="math display">\[
+M &gt; \dfrac{4m \ln(\frac{2}{\sigma})}{\epsilon^2}
+\]</span> 可以看出简单抽样算法的空间需求为<span class="math inline">\(M=O(\dfrac{4m \ln(\frac{2}{\sigma})}{\epsilon^2})\)</span>，与其数据流大小有关，当数据流规模较大时所需的空间也大幅增加. 除此之外，该算法对于每个到达的数据都要进行一次随机操作，会消耗较高的计算资源，而且当数据流大小未知时，无法得出 p 值（p 值应该没有什么太大关系，可以事先指定说前30%为频繁项，那么p=0.3——2021/1/20）.</p>
+<h1 id="basic-count-sketch">Basic Count Sketch</h1>
+<p><strong>Basic Count Sketch算法</strong></p>
+<p><img src="basic-count-sketch-eg.png" style="zoom:100%;" /></p>
+<p>该算法维护一个计数数组C和两个哈希函数 h、g. 哈希函数 h 将 n 个元素均匀地映射到 k 个位置，哈希函数 g 将 n 个元素映射为-1或+1. 对于一个新到达的元素，将其位置上的计数器加1或减1. 对于查询元素 a，估计出的频数为 <span class="math inline">\(\hat{f_a} = g(a) \cdot C[h(a)]\)</span>.</p>
+<p><img src="Basic-Count-Sketch.png" style="zoom:100%;" /></p>
+<p><strong>分析</strong></p>
+<p>对于每一个 <span class="math inline">\(j \in [n]\)</span>，根据哈希函数 h 的结果，定义一个指示变量 Y<sub>j</sub> 如下： <span class="math display">\[
+\begin{align*}
+Y_j = \left\{ 
+\begin{array}{ll}
+1, &amp; \text{如果$h(j)=h(a)$} \\
+0, &amp; \text{其他.}
+\end{array}
+\right.
+\end{align*}
+\]</span> <span class="math inline">\(Y_j=1\)</span> 表示元素 j 与元素 a 被哈希到了同一位置，因此元素 j 对计数器 C[h(a)] 有贡献，否则表示这两个元素没有被哈希到同一位置.</p>
+<p>对于元素a的频数估计取决于计数器 h(a) 位置的值，因此，所有被哈希到 h(a) 位置的元素都对a的频数估计起到了贡献，因此： <span class="math display">\[
+\begin{align*}
+\hat{f_a} &amp;= g(a) C[h(a)] \\
+&amp;= g(a) \sum_{j=1}^{n} g(j) \cdot f_j \cdot Y_j \\
+&amp;= f_a + g(a)\sum_{j \in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \\
+\end{align*}
+\]</span> 估计值的期望为： <span class="math display">\[
+\begin{align*}
+E[\hat{f_a}] &amp;= f_a + g(a) \sum_{j \in [n] \backslash \{a\}} f_i \cdot E(g(j) \cdot Y_j) \\
+&amp;= f_a
+\end{align*}
+\]</span> 哈希函数g和h独立，因此<span class="math inline">\(E[g(j) \cdot Y_j] = E[g(j)] \cdot E[Y_j] = 0 \cdot E[Y_j] = 0\)</span>.</p>
+<p>因此，Basic Count Sketch 算法给出的结果是 f<sub>a</sub> 的<strong>无偏估计</strong>.</p>
+<p>接着计算输出结果的方差： <span class="math display">\[
+\begin{align*}
+Var(\hat{f_a}) &amp;= g(a)^2Var\left[\sum_{j\in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \right] \\
+&amp;= g(a)^2 E\left[ \sum_{j\in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \right]^2 - g(a)^2\left( E\left[\sum_{j\in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \right]^2 \right) \\
+&amp;= g(a)^2 E\left[ \sum_{j\in [n] \backslash \{a\}} f_j \cdot g(j) \cdot Y_j \right]^2 \\
+&amp;= E \left[ \sum_{j\in [n] \backslash \{a\}} f_j^2 Y_j^2 + \sum_{i \ne j\in [n] \backslash \{a\}} f_if_jg(i)g(j)Y_jY_j \right]
+\end{align*}
+\]</span> 对于<span class="math inline">\(j\in [n] \backslash \{a\}\)</span>，有 <span class="math display">\[
+E[Y_j^2] = E[Y_j] = P(h(j)=h(a)) = \dfrac{1}{k} \qquad \text{伯努利随机变量二阶矩等于一阶矩}
+\]</span> 对于<span class="math inline">\(i \ne j\in [n] \backslash \{a\}\)</span>，有 <span class="math display">\[
+E[g(i)g(j)Y_iY_j] = E[g(i)]E[g(j)]E[Y_iY_j] = 0 \cdot E[Y_iY_j] = 0
+\]</span> 所以 <span class="math display">\[
+Var(\hat{f_a}) = \sum_{j \in [n] \backslash \{a\}} \dfrac{f_j^2}{k} + 0 = \dfrac{||f||^2_2 - f_a^2}{k} \doteq \dfrac{||f_{-a}||_2^2}{k}.
+\]</span> 可以看出，当计数空间增大时，方差随之减小.</p>
+<p>若要使得该算法为<span class="math inline">\((\epsilon,\delta)\)</span>-近似算法，根据Chebyshev不等式，有 <span class="math display">\[
+\begin{align*}
+P[|\hat{f_a}-f_a| \geqslant \epsilon||f||_2] &amp;\leqslant P[|\hat{f_a}-f_a| \geqslant \epsilon ||f_{-a}||_2] \\
+&amp;\leqslant \dfrac{Var(\hat{f_a})}{\epsilon^2 ||f_{-a}||_2^2} = \dfrac{1}{k\epsilon^2} &lt; \delta
+\end{align*}
+\]</span> 因此，需要 <span class="math inline">\(k=O(\dfrac{1}{\epsilon^2 \delta})\)</span>的空间使得<span class="math inline">\(\hat{f_a}\)</span>偏离真实值超过<span class="math inline">\(\epsilon ||f||_2\)</span>的概率小于<span class="math inline">\(\delta\)</span>. 由于其所需要的空间与数据流大小无关，因此是一个可行性算法.</p>
+<h1 id="count-sketch">Count Sketch</h1>
+<p>根据Basic Count Sketch，当计数数组长度为<span class="math inline">\(k=O(\dfrac{1}{\epsilon^2 \delta})\)</span>时，可以获得真实频数的<span class="math inline">\((\epsilon,\delta)\)</span>-近似估计. 将Tug of War技术运用到Sketch中，可以在<span class="math inline">\(k = O(\dfrac{\ln(\frac{1}{\delta})}{\epsilon^2})\)</span>时，得到真实频数的<span class="math inline">\((\epsilon,\delta)\)</span>-近似估计.</p>
+<p><img src="Count-Sketch.png" style="zoom:90%;" /></p>
+<p>Count Sketch 算法在Basic Count Sketch算法的基础上，将哈希函数的个数增加到 t 个，将每个元素都映射到 t 个位置上，再取 t 个位置上频数估计的<strong>中位数</strong>. 同时也有t个哈希函数决定每个位置上加1还是减1.</p>
+<p><img src="Count-Sketch1.png" style="zoom:85%;" /></p>
+<p><strong>分析</strong></p>
+<p>定义如下随机变量： <span class="math display">\[
+\begin{align*}
+Y_i = \left\{ 
+\begin{array}{ll}
+1, &amp; if \quad |\hat{f_a} - f_a| \geqslant \epsilon ||f||_2 \\
+0, &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span> Y<sub>i</sub>=1表示一次Basic Count Sketch算法成功的概率. 设 <span class="math inline">\(\delta = \dfrac{1}{3}\)</span>，即<span class="math inline">\(P(|\hat{f_a}-f_a|\geqslant \epsilon ||f||_2) &lt; \dfrac{1}{3}\)</span>，也即 <span class="math inline">\(P(Y_i = 1) &lt; \dfrac{1}{3}\)</span>. 记 <span class="math inline">\(\mu = E[\sum_i Y_i] \leqslant \dfrac{t}{3}\)</span>，由Chernoff Bound可得 <span class="math display">\[
+\begin{align*}
+P(\sum_iY_i &gt; \dfrac{t}{2}) &amp; \leqslant P(\sum_i Y_i &gt; (1+\dfrac{1}{2})\mu) \\
+&amp; \leqslant e^{-\frac{\mu(\frac{1}{2})^2}{4}}
+\end{align*}
+\]</span></p>
+<p><span class="math display">\[
+e^{-\frac{t}{48}} \leqslant e^{-\frac{\mu(\frac{1}{2})^2}{4}} &lt; \delta
+\]</span></p>
+<p>因此，有<span class="math inline">\(t &gt; 48 \ln \frac{1}{\delta}\)</span>，即 <span class="math inline">\(t=O(\log \frac{1}{\delta})\)</span>. 所以我们可以在<span class="math inline">\(O(\frac{\log 1/\delta}{\epsilon^2})\)</span>的空间复杂度内实现<span class="math inline">\((\epsilon,\delta)\)</span>-近似算法.</p>
+<h1 id="count-min-sketch">Count-Min Sketch</h1>
+<p>Hcount和Count-Min Sketch都是同一种紧凑的概要数据结构，他们放弃了频数的无偏估计，但是获得了更为有效的频数估计算法，它的空间复杂度仅为<span class="math inline">\(O(\frac{\log 1/\delta}{\epsilon})\)</span>.</p>
+<p><img src="Count-Min-Sketch.png" style="zoom:100%;" /></p>
+<p>CM算法需要维护一个宽度为 w，深度为 d 的计数器数组： <span class="math display">\[
+C[1\dots d][1 \dots w]
+\]</span> 初始化时每个元素为0. 另外需要 d 个哈希函数： <span class="math display">\[
+h_i:[n] \rightarrow [w]
+\]</span> 是从<strong>两两独立的哈希函数族</strong>中随机均匀抽取得到的. 一旦 w 和 d 确定下来，CM Sketch所需的空间便可确定.</p>
+<p><img src="Count-Min-Sketch1.png" style="zoom:100%;" /></p>
+<p>每次的更新 c<sub>t</sub> 严格为正，意味着CM Sketch计数器数组中的元素值只会增加，是一种<strong>高估</strong>算法，相比于Count Sketch中，c<sub>t</sub>可正可负，CM Sketch 对应的是收银机模型，而Count Sketch对应的是十字转盘模型.</p>
+<p><strong>分析</strong></p>
+<p>对于给定的元素a和哈希函数 h<sub>i</sub>，定义随机变量 X<sub>i</sub> 表示在第 i 个哈希函数上其他元素对元素 a 的贡献大小. 对于 <span class="math inline">\(j \in [n] \backslash \{a\}\)</span>，定义 Y<sub>i,j</sub> 表示元素 j 在第 i 个哈希函数上与元素 a 冲突与否： <span class="math display">\[
+\begin{align*}
+Y_{i,j} = \left\{ 
+\begin{array}{ll}
+1, &amp; \text{if $h_i(j) = h_i(a),$} \\
+0, &amp; otherwise.
+\end{array}
+\right.
+\end{align*}
+\]</span></p>
+<p><span class="math display">\[
+X_i = \sum_{j \in [n] \backslash \{a\}} f_i Y_{i,j}
+\]</span></p>
+<p>由期望的性质可得（注意 k 和 w 是相同含义） <span class="math display">\[
+E[X_i] = \sum_{j \in [n] \backslash \{a\}} f_j E[Y_{i,j}] = \sum_{j \in [n] \backslash \{a\}} \dfrac{f_i}{k} = \dfrac{||f||_1 - f_a}{k} = \dfrac{||f_{-a}||_1}{k}
+\]</span> 由于<span class="math inline">\(f_j \geqslant 0\)</span>，所以<span class="math inline">\(X_i \geqslant 0\)</span>，由Markov不等式得 <span class="math display">\[
+P[X_i \geqslant \epsilon||f||_1] \quad \leqslant \quad P[X_i \geqslant \epsilon ||f_{-a}||_1] \quad \leqslant \quad \dfrac{||f_{-a}||_1}{k \epsilon ||f_{-a}||_1} \quad \doteq \quad \dfrac{1}{2}
+\]</span> 因此<span class="math inline">\(k = O(\frac{2}{\epsilon})\)</span>. 以上概率仅是对于一个哈希函数而言，实际上有 d 个哈希函数，若 <span class="math inline">\(\hat{f_a} - f_a \geqslant x\)</span>，则 <span class="math inline">\(\min \{X_1, \dots, X_d \} \geqslant x\)</span>，因此 <span class="math display">\[
+\begin{align*}
+P(\hat{f_a} - f_a \geqslant \epsilon ||f_{-a}||_1) &amp;= P(\min \{X_1, \dots, X_d \} \geqslant \epsilon ||f_{-a}||_1) \\ 
+&amp; = \prod_{i=1}^{d} P(X_i \geqslant \epsilon ||f_{-a}||_1) \\
+&amp; \leqslant \dfrac{1}{2^d}
+\end{align*}
+\]</span> 可以选择适当的d使得 <span class="math display">\[
+P(\hat{f_a} - f_a \geqslant \epsilon ||f_{-a}||_1) \leqslant \dfrac{1}{2^d} \leqslant \delta
+\]</span> 此时<span class="math inline">\(d=O(\log \frac{1}{\delta})\)</span>. 且 <span class="math display">\[
+f_a \leqslant \hat{f_a} \leqslant f_a + \epsilon ||f_{-a}||_1
+\]</span> 所以，CM Sketch 算法需要的计数器个数为<span class="math inline">\(M=O(\dfrac{\log 1/\delta}{\epsilon})\)</span>.</p>
+<blockquote>
+<p>Misra-Gries算法伪代码的LaTeX代码：</p>
+<figure class="highlight latex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">\begin</span>&#123;algorithm&#125;[H]</span><br><span class="line"></span><br><span class="line">  <span class="keyword">\KwIn</span>&#123;<span class="keyword">\text</span>&#123;数据流<span class="built_in">$</span><span class="keyword">\sigma</span>=&lt;a<span class="built_in">_</span>1,a<span class="built_in">_</span>2,<span class="keyword">\dots</span>,a<span class="built_in">_</span>m&gt;<span class="built_in">$</span>, <span class="built_in">$</span>a<span class="built_in">_</span>i <span class="keyword">\in</span> [n]<span class="built_in">$</span>, 正整数k&#125;&#125;</span><br><span class="line">  <span class="keyword">\KwResult</span>&#123;数据流<span class="built_in">$</span><span class="keyword">\sigma</span><span class="built_in">$</span>中的频繁元素集合F&#125;</span><br><span class="line"></span><br><span class="line">  F <span class="built_in">$</span><span class="keyword">\leftarrow</span> <span class="keyword">\emptyset</span><span class="built_in">$</span> <span class="keyword">\;</span></span><br><span class="line">  <span class="keyword">\While</span>&#123;数据流<span class="built_in">$</span><span class="keyword">\sigma</span><span class="built_in">$</span>非空&#125;&#123;</span><br><span class="line">    数据流<span class="built_in">$</span><span class="keyword">\sigma</span><span class="built_in">$</span>中第<span class="built_in">$</span>i<span class="built_in">$</span>个元素到达<span class="keyword">\;</span></span><br><span class="line">    <span class="keyword">\If</span>&#123;<span class="built_in">$</span>a<span class="built_in">_</span>i <span class="keyword">\in</span> keys(F)<span class="built_in">$</span>&#125;&#123;</span><br><span class="line">      <span class="built_in">$</span>F<span class="built_in">_</span>i <span class="keyword">\leftarrow</span> F<span class="built_in">_</span>i + 1<span class="built_in">$</span><span class="keyword">\;</span></span><br><span class="line">      &#125;</span><br><span class="line">    <span class="keyword">\Else</span>&#123;</span><br><span class="line">    <span class="keyword">\tcc</span>&#123;集合F中最多同时存在k-1个元素, 当第k个元素到达时, 先将其放入F中，然后遍历F中元素做减1操作, 最后将值为0的元素清除掉，此时新到达的第k个元素也会被清除掉，相当于最开始便不加入集合F而直接遍历F做减1清零操作, 因此else块不需要有<span class="built_in">$</span>F<span class="built_in">_</span>i <span class="keyword">\leftarrow</span> 1<span class="built_in">$</span>操作&#125;</span><br><span class="line">      <span class="keyword">\If</span>&#123;<span class="built_in">$</span>|keys(F)| &lt; k-1<span class="built_in">$</span>&#125;&#123;</span><br><span class="line">        <span class="built_in">$</span>F<span class="built_in">_</span>i <span class="keyword">\leftarrow</span> 1<span class="built_in">$</span><span class="keyword">\;</span></span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">\Else</span>&#123;</span><br><span class="line">      <span class="keyword">\For</span>&#123;<span class="built_in">$</span>a<span class="built_in">_</span>j <span class="keyword">\in</span> keys(F)<span class="built_in">$</span>&#125;&#123;</span><br><span class="line">          <span class="built_in">$</span>F<span class="built_in">_</span>j <span class="keyword">\leftarrow</span> F<span class="built_in">_</span>j - 1<span class="built_in">$</span><span class="keyword">\;</span></span><br><span class="line">          <span class="keyword">\If</span>&#123;<span class="built_in">$</span>F<span class="built_in">_</span>j=0<span class="built_in">$</span>&#125;&#123;</span><br><span class="line">            从<span class="built_in">$</span>F<span class="built_in">$</span>中移除<span class="built_in">$</span>a<span class="built_in">_</span>j<span class="built_in">$</span><span class="keyword">\;</span>&#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">\KwRet</span>&#123;频数估计数组F&#125;</span><br><span class="line"><span class="keyword">\caption</span>&#123;Misra-Greis算法&#125;<span class="keyword">\label</span>&#123;algorithm&#125;</span><br><span class="line"><span class="keyword">\end</span>&#123;algorithm&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Yuxin Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://yuxinli1.github.io/Sketch/" title="Sketch">https://yuxinli1.github.io/Sketch/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/Sketch/" rel="tag"># Sketch</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Sampling/" rel="prev" title="Sampling">
+      <i class="fa fa-chevron-left"></i> Sampling
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Random-Walk-and-PageRank/" rel="next" title="Random Walk and PageRank">
+      Random Walk and PageRank <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%B5%81%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">数据流模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%91%E4%BC%BC%E7%AE%97%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">近似算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%91%E7%B9%81%E9%A1%B9%E6%8C%96%E6%8E%98"><span class="nav-number">3.</span> <span class="nav-text">频繁项挖掘</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#misra-gries%E7%AE%97%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">Misra-Gries算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E6%8A%BD%E6%A0%B7%E7%AE%97%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">简单抽样算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#basic-count-sketch"><span class="nav-number">6.</span> <span class="nav-text">Basic Count Sketch</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#count-sketch"><span class="nav-number">7.</span> <span class="nav-text">Count Sketch</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#count-min-sketch"><span class="nav-number">8.</span> <span class="nav-text">Count-Min Sketch</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yuxin Li"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Yuxin Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/YuxinLi1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;YuxinLi1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yxleezw@163.com" title="E-Mail → mailto:yxleezw@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuxin Li</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'e213ec0829f4e0d15e1e',
+      clientSecret: '5612bacf3b3c67a684b2103b4d03bc7fe5182a91',
+      repo        : 'blog_comments',
+      owner       : 'YuxinLI1',
+      admin       : ['YuxinLi1'],
+      id          : 'a279d85b970276cadaecec24d47c28b1',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <div style="width:100%;height:100%;position:fixed;top:0;z-index:-1;">
+  	<canvas id="canvas">
+  </div>
+  <script type="text/javascript" src="/js/bg_lines.js"></script>
+</body>
+</html>

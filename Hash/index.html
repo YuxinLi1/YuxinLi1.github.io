@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Noto Serif SC:300,300italic,400,400italic,700,700italic|Roboto Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yuxinli1.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="介绍 在记录的关键字与记录的存储地址之间建立的对应关系叫做Hash函数。Hash函数是一种映射，是从关键字到存储地址之间的映射，它可以使得每个关键字 \(key\) 都有唯一的存储位置 \(h(key)\) 与之对应，因此一旦建立了这种对应关系，就可以在 \(O(1)\) 的时间复杂度找到与关键字匹配的记录所在的存储位置。 采用Hash技术将记录存储在一块连续的空间中，这块存储空间称为哈希表 Ha">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hash">
+<meta property="og:url" content="https://yuxinli1.github.io/Hash/index.html">
+<meta property="og:site_name" content="Yuxin&#39;s blog">
+<meta property="og:description" content="介绍 在记录的关键字与记录的存储地址之间建立的对应关系叫做Hash函数。Hash函数是一种映射，是从关键字到存储地址之间的映射，它可以使得每个关键字 \(key\) 都有唯一的存储位置 \(h(key)\) 与之对应，因此一旦建立了这种对应关系，就可以在 \(O(1)\) 的时间复杂度找到与关键字匹配的记录所在的存储位置。 采用Hash技术将记录存储在一块连续的空间中，这块存储空间称为哈希表 Ha">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yuxinli1.github.io/Hash/hash%20table.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Hash/model%20function.png">
+<meta property="article:published_time" content="2021-01-25T10:46:57.000Z">
+<meta property="article:modified_time" content="2021-01-25T11:19:14.969Z">
+<meta property="article:author" content="Yuxin Li">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="hash">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yuxinli1.github.io/Hash/hash%20table.png">
+
+<link rel="canonical" href="https://yuxinli1.github.io/Hash/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Hash | Yuxin's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Yuxin's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Hash/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hash
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:46:57 / 修改时间：19:19:14" itemprop="dateCreated datePublished" datetime="2021-01-25T18:46:57+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="介绍">介绍</h1>
+<p>在记录的关键字与记录的存储地址之间建立的对应关系叫做Hash函数。Hash函数是一种映射，是从关键字到存储地址之间的映射，它可以使得每个关键字 <span class="math inline">\(key\)</span> 都有唯一的存储位置 <span class="math inline">\(h(key)\)</span> 与之对应，因此一旦建立了这种对应关系，就可以在 <span class="math inline">\(O(1)\)</span> 的时间复杂度找到与关键字匹配的记录所在的存储位置。</p>
+<p>采用Hash技术将记录存储在一块连续的空间中，这块存储空间称为<strong>哈希表 Hash Table</strong>，将关键字与存储位置形成映射的函数称为<strong>Hash 函数</strong>，得到的存储位置称为<strong>Hash 地址</strong>。</p>
+<a id="more"></a>
+<p><img src="hash table.png" style="zoom:67%;float: middle;" /></p>
+<center>
+Hash Table
+</center>
+<p>最常见的哈希函数比如取模运算：</p>
+<p><img src="model function.png" style="zoom: 33%;float: middle;" /></p>
+<center>
+取模运算
+</center>
+<p>在Hash函数中，key可以是任意值，整数、字符串、文档、URL等。通过Hash函数可以将任意长度的输入映射为固定的整数也即哈希值Hash value。</p>
+<h1 id="hash函数特点">Hash函数特点</h1>
+<ul>
+<li><strong>压缩存储</strong> 可以将长的文档、URL等映射为一个固定大小的整数</li>
+<li><strong>无冲突</strong> 理想状态下，输入不同的关键字会得到不同的哈希值，即使两个差异非常小的关键字，其哈希值也应该是不同的。因此，相同的关键字经由同一个Hash函数hash之后得到的Hash Value也一定是相同的</li>
+<li><strong>不可逆</strong> 在不知道Hash函数的情况下，仅知道Hash Value，不可能轻易地猜到Hash Value对应的关键字，唯一的解决办法是<strong>暴力破解Brute Force</strong></li>
+</ul>
+<p>常用哈希函数介绍<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/101390996">参考</a></p>
+<h1 id="hash-冲突">Hash 冲突</h1>
+<p>在关键字较多的情况下，可能会出现两个不同的关键字被映射到同一个存储位置，因此发生了<strong>Hash冲突 Collision</strong>。</p>
+<p>Hash冲突的解决方法：</p>
+<ul>
+<li>冲突避免</li>
+<li>冲突解决</li>
+</ul>
+<p>假定我们使用如下哈希表：</p>
+<ul>
+<li>数据集合U</li>
+<li>哈希表的长度R</li>
+<li>哈希函数 <span class="math inline">\(h: U \rightarrow R\)</span></li>
+</ul>
+<p>如果 h 是单射，即对于U中的每一个元素，在R中都有且仅有一个元素与之对应，那么此时称该哈希为<strong>完美哈希Perfect Hashing</strong>；如果 h 是双射，即一一映射，集合U中每一个元素在集合R中都有且仅有一个元素与之对应，且集合R中每一个元素在集合U中也有且只有一个元素与之对应，此时称之为<strong>最小完美哈希Minimal Perfect Hashing</strong>。</p>
+<p>如果集合U预先给定且不再调整，那么称为<strong>静态哈希表Static Hash Table</strong>；如果U是可变化的，称为<strong>动态哈希表Dynamic Hash Table</strong>。</p>
+<h2 id="hash冲突避免">Hash冲突避免</h2>
+<p>如果Hash Function选择的足够好，并且集合U的大小小于等于R，那么就有可能形成完美哈希。</p>
+<p>对于Static Hash Table，总会有确定性的策略可以找到这样的 h 来达成Minimal Perfect Hashing。</p>
+<p>对于Dynamic Hash Table，由于我们不能预测集合U中元素的分布，因此不能预先设计哈希函数 h 来形成完美哈希。而且由于集合U中元素的不确定性，对于由确定性策略生成的哈希函数 h，总能够生成一个对抗性集合U 使得哈希冲突尽可能的多。因此，必须使用非确定性策略构建哈希函数，才有可能避免哈希冲突。</p>
+<p>我们可以预先准备一组哈希函数，这组哈希函数可以使得相同分布的输入不会产生相同分布的输出，因此针对某一个特定哈希函数的对抗性策略就不会影响其它的哈希函数，所以可以通过随机选取哈希函数来抵抗对抗性策略。</p>
+<h3 id="全域哈希族-universal-hashing">全域哈希族 Universal Hashing</h3>
+<p><strong>Definition</strong>: 令集合U 为关键字key的集合，集合 <span class="math inline">\(\mathcal{H}\)</span> 是一组有限的哈希函数集合，其中每一个哈希函数为 <span class="math inline">\(h_i : U \rightarrow \{0,1,...,m-1\}\)</span>. 我们称集合 <span class="math inline">\(\mathcal{H}\)</span> 是全域的，如果对于 <span class="math inline">\(\forall v,y \in U\)</span> 并且 <span class="math inline">\(x \neq y\)</span>，都有 $|{h  : h(x) = h(y) }| =  $，即集合 <span class="math inline">\(\mathcal{H}\)</span> 满足将任意两个不等的关键字哈希到同一位置的哈希函数的数量等于集合 <span class="math inline">\(\mathcal{H}\)</span> 的大小除以 m。</p>
+<p><em>自己的理解：假定元素 x 被哈希到了某个位置，现在又来了一个新的元素 y，那么元素 x 和 y 发生碰撞的概率为</em> <span class="math display">\[
+\dfrac{\text{与元素x产生相同哈希值的哈希函数个数}}{\text{集合$\mathcal{H}$中总的哈希函数个数}} = \dfrac{\dfrac{|\mathcal{H}|}{m}}{|\mathcal{H}|} = \dfrac{1}{m}
+\]</span> <em>(或许可以理解为只有在集合U中元素个数大于 m 时才会发生冲突?)</em></p>
+<p><em>除此之外，并不能在选取哈希函数之后还能保证冲突率是<span class="math inline">\(\frac{1}{m}\)</span>，全域哈希族只能保证在还没选取哈希函数时的整体性能，而不是单次的性能。哈希函数的选取是在哈希表建立之初选区的，不是每插入一个值就选取一个哈希函数</em></p>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Universal_hashing">Wikipedia</a></p>
+<p><strong>构造</strong>：Carter 和 Wegman最初的做法是选择一个足够大的素数 p，对于有m个槽的哈希表，定义 <span class="math display">\[
+h_{a,b}(x) = ((ax+b) \quad mod \quad p) \quad mod \quad m
+\]</span> 其中a, b是随机选取的 p 的余数，且<span class="math inline">\(a \ne 0\)</span>。所有这样的哈希函数族即为全域哈希族。</p>
+<h2 id="hash冲突解决">Hash冲突解决</h2>
+<ul>
+<li>开发地址法 Open Addressing
+<ul>
+<li>线性探测法 Linear probing</li>
+<li>二次探测法 Quadratic probing</li>
+<li>双重散列法 Double Hashing</li>
+<li>伪随机探测法 Pseudo Random probing</li>
+</ul></li>
+<li>链地址法 Separate Chaining</li>
+<li>Two-way Hashing</li>
+<li>再哈希法 Rehashing</li>
+<li>布谷鸟哈希 Cuckoo Hashing</li>
+<li>建立公共溢出区</li>
+</ul>
+<h3 id="开放地址法-open-addressing">开放地址法 Open Addressing</h3>
+<p>开放地址法也称再散列法，主要思想是：当关键字key的哈希地址<span class="math inline">\(addr = h(key)\)</span>出现冲突时，以addr为基础，产生另外一个哈希地址 addr1，如果addr1再出现冲突，再以addr1为基础产生另一个哈希地址addr2，直到不再产生冲突，然后将相应元素存入其中。</p>
+<p>开放地址法在装填因子（装填因子=已占用槽数/总槽数）较高时性能会急剧下降，为应对这一情况，有时也使用链地址法。</p>
+<p><strong>线性探测法</strong>对缓存友好，性能最高，比较常用，但是可能带来冲突聚集的情况。为了避免这一现象，有时也使用<strong>二次探测法</strong>。二次探测法也会受到对抗性策略干扰，因此有时会结合<strong>双重散列法</strong>配合<strong>全域哈希族</strong>解决该问题。</p>
+<h3 id="线性探测法-linear-probing">线性探测法 Linear probing</h3>
+<p><span class="math display">\[
+h(k,i) = (h(k) + d_i) \quad mod \quad m \qquad i=1,2,...,n
+\]</span></p>
+<p>其中h(key)为哈希函数，m为表长，d<sub>i</sub>为增量序列，对于线性探测法，<span class="math inline">\(d_i = 1,2,3,...,m-1\)</span>。</p>
+<p>线性探测法的特点是：冲突发生时，依次顺序查找表中的下一单元，直到找出一个空单元或遍历完所有的单元。其缺点是容易发生冲突聚集。</p>
+<h3 id="二次探测法-quadratic-probing">二次探测法 Quadratic probing</h3>
+<p><span class="math display">\[
+h(k,i) = (h(k)+c_1 i+c_2 i^2) \quad mod \quad m
+\]</span></p>
+<p>其中<span class="math inline">\(c_2 \ne 0\)</span>(若<span class="math inline">\(c_2 = 0\)</span>，则退化为线性探测法)。对于同一个哈希表，c<sub>1</sub>和c<sub>2</sub>是常数。</p>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Quadratic_probing">e.g.</a></p>
+<ul>
+<li>如果 h(k,i) = (h(k) + i + i<sup>2</sup>) mod m，此时探测序列为 h(k), h(k)+2, h(k)+6, ...</li>
+<li>对于 m=2<sup>n</sup>，一个比较好的选择是c<sub>1</sub> = c<sub>2</sub> = 0.5，增量序列为h(k), h(k)+1, h(k)+3, h(k)+6, ...，正好构成了一个三角序列</li>
+<li>对于m为大于2的素数的情况，许多选择都会使得增量序列只能在 <span class="math inline">\([0, \frac{m-1}{2}]\)</span> 的范围内，因此，对于给定的元素，只有 <span class="math inline">\(\frac{m}{2}\)</span>个可用的探测值，需要使用其他技术来保证当哈希表中存在超过<span class="math inline">\(\frac{1}{2}\)</span>的空间被占用时也能保证插入成功</li>
+</ul>
+<p><strong>可选的方法</strong></p>
+<p>比如将偏移量的符号改为交替的，如 <span class="math display">\[
+1,-4,9,-16,...
+\]</span> 或者 <span class="math display">\[
+1,-1,4,-4,9,-9,16,-16,...
+\]</span> 但即便如此，也可能会出现哈希表中有空槽，但是由于跳来跳去而找不到空闲的位置，考虑一个哈希表长度为5，h(k) = k mod 5，插入序列为5，6，7，11，探测序列为1，-1，4，-4，9，-9的情况。</p>
+<p>线性探测很容易聚集，二次探测没那么容易聚集，但也并不是不可能。如果表的大小设计为<strong>4k+3</strong> 的形式，而且是这种形式的素数时，理论上可以证明只要有空位就一定能找到。</p>
+<h3 id="双重散列法-double-hashing">双重散列法 Double Hashing</h3>
+<p><span class="math display">\[
+h(k,i) = (h(k) + i \cdot h_1(k)) \quad mod \quad m
+\]</span></p>
+<p>其探查序列为h(k), h(k) +h<sub>1</sub>(k), h(k)+2h<sub>1</sub>(k),...该方法使用了两个散列函数h(key)和h<sub>1</sub>(key)。</p>
+<h3 id="伪随机探测法-pseudo-random-probing">伪随机探测法 Pseudo Random probing</h3>
+<p>增量序列为事先建立一个伪随机数发生器，如 i=(i+p)%m，并给定一个随机数作为起点。当出现冲突时，依次遍历伪随机数数列查找空闲单元。</p>
+<h3 id="链地址法-separate-chaining">链地址法 Separate Chaining</h3>
+<p>基本思想时将所有哈希地址为 i 的元素构成一个称为<strong>同义词链</strong>的单链表，并将单链表的头指针存在哈希表的第 i 个单元中。因此查找、插入、删除都在链表中进行。</p>
+<h4 id="开放地址法与链地址法拉链法对比">开放地址法与链地址法(拉链法)对比</h4>
+<p><strong>链地址法的优点</strong></p>
+<ol type="1">
+<li>处理冲突简单，无冲突聚集现象，非同义词不会发生冲突，因此平均查找长度较短</li>
+<li>各链表节点动态申请，适用于建表前无法确定表厂的情况</li>
+<li>开放地址法为减少冲突，要求装填因子<span class="math inline">\(\alpha\)</span>较小，因此当节点规模较大时会浪费很多空间。而链地址法中对<span class="math inline">\(\alpha\)</span>没有特殊要求，且当节点较大时，指针所占空间可忽略不计，因此更加节省空间</li>
+<li>在用链地址法构造的哈希表中删除一个节点只要将其从链表中删除即可。而对开放地址法创建的哈希表，不能仅仅将对应节点所在位置置为空，否则将截断在它之后填入的同义词节点的查找路径。在开放地址法中，空地址单元代表查找失败，因此在用开放地址法创建的哈希表上执行删除操作，只能将对应节点上做删除标记，而不能真正删除节点</li>
+</ol>
+<p><strong>链地址法的缺点</strong></p>
+<ol type="1">
+<li>指针需要额外的空间，因此当节点规模较小时，开放地址法更省空间；而若将节省的指针空间用来扩大哈希表的规模，可以使装填因子变小，又减少了开放地址法中冲突，从而提高查找速度</li>
+</ol>
+<h3 id="two-way-chaining">Two-way Chaining</h3>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://hcoona.github.io/Data-Structure/hash-table-summary-and-advanced-topics/">Two-way Chaining</a> 就像是 Double hashing，区别在于 Double hashing 使用一个哈希表，而 Two-way Chaining 使用两个哈希表 T<sub>1</sub>和 T<sub>2</sub>。在插入时，T[h<sub>1</sub>(x)] 和T[h<sub>2</sub>(x)] 中哪个装载的元素更少，就插入到哪儿。查找时需要访问两个哈希表。</p>
+</blockquote>
+<h3 id="再哈希法-rehashing">再哈希法 Rehashing</h3>
+<p>同时构造多个不同的哈希函数： <span class="math display">\[
+h_i = RH_i(key) \qquad i=1,2,3,...,k
+\]</span> 当哈希地址h<sub>1</sub>=RH<sub>1</sub>(k)发生冲突时，再计算h<sub>i</sub>=RH<sub>i</sub>(k)直到冲突不再产生。这种方法不容易产生聚集，但增加了计算时间。</p>
+<h3 id="布谷鸟哈希-cuckoo-hashing">布谷鸟哈希 Cuckoo Hashing</h3>
+<p>最早于2001年由<a target="_blank" rel="noopener" href="https://www.cs.tau.ac.il/~shanir/advanced-seminar-data-structures-2009/bib/pagh01cuckoo.pdf">Rasmus Pagh和Flemming Friche Rodler</a>提出。为了解决哈希冲突而提出，利用较少的计算换取较大的空间。该哈希方法类似于布谷鸟在别的鸟巢中下蛋，并将别的鸟蛋挤出的行为。具有占用空间小，查询迅速的特性。</p>
+<p>Cuckoo Hashing使用两个Hash Function，存在使用一个Hash Table和使用两个Hash Table两种情况。其算法描述如下：</p>
+<ol type="1">
+<li>当两个哈希地址都为空时，任意选取一个位置插入；</li>
+<li>当只有其中一个哈希地址为空时，插到空的位置；</li>
+<li>当两个哈希地址都不为空时，随机选取其中一个哈希地址，将该位置上的key踢出，并将新的元素插入到该位置；对于被踢出的key，计算其另一个哈希函数的值，并插入到该哈希值对应的单元，如果该单元不为空，则将该单元的值踢出；重复以上过程</li>
+</ol>
+<p>Cuckoo Hashing 有两种变体：一种通过增加哈希函数提高空间利用率；一种是增加哈希表，每个哈希函数对应一张哈希表。</p>
+<p>可以看到Cuckoo Hashing的过程可能因为反复踢出无限循环下去，这时候需要对一次循环过程中踢出次数进行限制，超过限制则认为需要增加哈希函数。</p>
+<p>对于两张哈希表的情况：</p>
+<p>假设有两张哈希表A和B，分别对应哈希函数hashA和hashB，对于新到来的关键字key，如果hashA(key).value=key1 且 hashB(key).value=key2，那么任选一个关键字将其踢出。假设选择key1踢出，那么将key放到key1所在单元。对于key1，计算其hashB(key1)，并将其插入到该位置；如果该位置非空，则重复上述过程。其图例可<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/Cockoo%20hash/3022855">参考</a></p>
+<h1 id="hash-table-动态大小调整暂略">Hash Table 动态大小调整（暂略）</h1>
+<p>主要方法：</p>
+<ul>
+<li>线性哈希表 Linear Hash Table</li>
+<li>螺旋存储法 Spiral Storage</li>
+<li>可扩展哈希 Extendible Hashing</li>
+</ul>
+<p>可参考<a target="_blank" rel="noopener" href="http://hcoona.github.io/Data-Structure/hash-table-summary-and-advanced-topics/">这篇文章</a>，之后有时间再自己整理</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Yuxin Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://yuxinli1.github.io/Hash/" title="Hash">https://yuxinli1.github.io/Hash/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/hash/" rel="tag"># hash</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Morris-Counting-Algorithm/" rel="prev" title="Morris Counting Algorithm">
+      <i class="fa fa-chevron-left"></i> Morris Counting Algorithm
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Bloom-Filter/" rel="next" title="Bloom Filter">
+      Bloom Filter <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#hash%E5%87%BD%E6%95%B0%E7%89%B9%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">Hash函数特点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#hash-%E5%86%B2%E7%AA%81"><span class="nav-number">3.</span> <span class="nav-text">Hash 冲突</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#hash%E5%86%B2%E7%AA%81%E9%81%BF%E5%85%8D"><span class="nav-number">3.1.</span> <span class="nav-text">Hash冲突避免</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A8%E5%9F%9F%E5%93%88%E5%B8%8C%E6%97%8F-universal-hashing"><span class="nav-number">3.1.1.</span> <span class="nav-text">全域哈希族 Universal Hashing</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hash%E5%86%B2%E7%AA%81%E8%A7%A3%E5%86%B3"><span class="nav-number">3.2.</span> <span class="nav-text">Hash冲突解决</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E6%94%BE%E5%9C%B0%E5%9D%80%E6%B3%95-open-addressing"><span class="nav-number">3.2.1.</span> <span class="nav-text">开放地址法 Open Addressing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E6%8E%A2%E6%B5%8B%E6%B3%95-linear-probing"><span class="nav-number">3.2.2.</span> <span class="nav-text">线性探测法 Linear probing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E6%AC%A1%E6%8E%A2%E6%B5%8B%E6%B3%95-quadratic-probing"><span class="nav-number">3.2.3.</span> <span class="nav-text">二次探测法 Quadratic probing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8C%E9%87%8D%E6%95%A3%E5%88%97%E6%B3%95-double-hashing"><span class="nav-number">3.2.4.</span> <span class="nav-text">双重散列法 Double Hashing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%AA%E9%9A%8F%E6%9C%BA%E6%8E%A2%E6%B5%8B%E6%B3%95-pseudo-random-probing"><span class="nav-number">3.2.5.</span> <span class="nav-text">伪随机探测法 Pseudo Random probing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%93%BE%E5%9C%B0%E5%9D%80%E6%B3%95-separate-chaining"><span class="nav-number">3.2.6.</span> <span class="nav-text">链地址法 Separate Chaining</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%80%E6%94%BE%E5%9C%B0%E5%9D%80%E6%B3%95%E4%B8%8E%E9%93%BE%E5%9C%B0%E5%9D%80%E6%B3%95%E6%8B%89%E9%93%BE%E6%B3%95%E5%AF%B9%E6%AF%94"><span class="nav-number">3.2.6.1.</span> <span class="nav-text">开放地址法与链地址法(拉链法)对比</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#two-way-chaining"><span class="nav-number">3.2.7.</span> <span class="nav-text">Two-way Chaining</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%8D%E5%93%88%E5%B8%8C%E6%B3%95-rehashing"><span class="nav-number">3.2.8.</span> <span class="nav-text">再哈希法 Rehashing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%83%E8%B0%B7%E9%B8%9F%E5%93%88%E5%B8%8C-cuckoo-hashing"><span class="nav-number">3.2.9.</span> <span class="nav-text">布谷鸟哈希 Cuckoo Hashing</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#hash-table-%E5%8A%A8%E6%80%81%E5%A4%A7%E5%B0%8F%E8%B0%83%E6%95%B4%E6%9A%82%E7%95%A5"><span class="nav-number">4.</span> <span class="nav-text">Hash Table 动态大小调整（暂略）</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yuxin Li"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Yuxin Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/YuxinLi1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;YuxinLi1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yxleezw@163.com" title="E-Mail → mailto:yxleezw@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuxin Li</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'e213ec0829f4e0d15e1e',
+      clientSecret: '5612bacf3b3c67a684b2103b4d03bc7fe5182a91',
+      repo        : 'blog_comments',
+      owner       : 'YuxinLI1',
+      admin       : ['YuxinLi1'],
+      id          : '624bf28712d3db55b14478177ae5442f',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <div style="width:100%;height:100%;position:fixed;top:0;z-index:-1;">
+  	<canvas id="canvas">
+  </div>
+  <script type="text/javascript" src="/js/bg_lines.js"></script>
+</body>
+</html>

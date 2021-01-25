@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Noto Serif SC:300,300italic,400,400italic,700,700italic|Roboto Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yuxinli1.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="在文本冗余检测问题中，会面临海量数据和高维数据的挑战，学工界提出的技术大致有最近邻查找(Nearest Neighbor, NN)或者近似最近邻查找(Approximate Nearest Neighbor, ANN). 而局部敏感哈希(LSH)就是ANN中广泛运用的技术，它是采用哈希技术实现对海量高维数据进行近似最近邻快速查找的一种方法.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Locality Sensitive Hashing">
+<meta property="og:url" content="https://yuxinli1.github.io/Locality-Sensitive-Hashing/index.html">
+<meta property="og:site_name" content="Yuxin&#39;s blog">
+<meta property="og:description" content="在文本冗余检测问题中，会面临海量数据和高维数据的挑战，学工界提出的技术大致有最近邻查找(Nearest Neighbor, NN)或者近似最近邻查找(Approximate Nearest Neighbor, ANN). 而局部敏感哈希(LSH)就是ANN中广泛运用的技术，它是采用哈希技术实现对海量高维数据进行近似最近邻快速查找的一种方法.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yuxinli1.github.io/Locality-Sensitive-Hashing/lsh.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Locality-Sensitive-Hashing/shingling.webp">
+<meta property="og:image" content="https://yuxinli1.github.io/Locality-Sensitive-Hashing/3-shingling.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Locality-Sensitive-Hashing/shingling.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Locality-Sensitive-Hashing/minhashing.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Locality-Sensitive-Hashing/lsh2.png">
+<meta property="og:image" content="https://yuxinli1.github.io/Locality-Sensitive-Hashing/lsh%20r=5%20b=10.png">
+<meta property="article:published_time" content="2021-01-25T10:47:49.000Z">
+<meta property="article:modified_time" content="2021-01-25T11:19:09.204Z">
+<meta property="article:author" content="Yuxin Li">
+<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="hash">
+<meta property="article:tag" content="LSH">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yuxinli1.github.io/Locality-Sensitive-Hashing/lsh.png">
+
+<link rel="canonical" href="https://yuxinli1.github.io/Locality-Sensitive-Hashing/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Locality Sensitive Hashing | Yuxin's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Yuxin's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Locality-Sensitive-Hashing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Locality Sensitive Hashing
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-01-25 18:47:49 / 修改时间：19:19:09" itemprop="dateCreated datePublished" datetime="2021-01-25T18:47:49+08:00">2021-01-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在文本冗余检测问题中，会面临海量数据和高维数据的挑战，学工界提出的技术大致有<strong>最近邻查找(Nearest Neighbor, NN)</strong>或者<strong>近似最近邻查找(Approximate Nearest Neighbor, ANN)</strong>. 而<strong>局部敏感哈希(LSH)</strong>就是ANN中广泛运用的技术，它是采用哈希技术实现对海量高维数据进行近似最近邻快速查找的一种方法.</p>
+<a id="more"></a>
+<h1 id="距离测量">距离测量</h1>
+<p>目标：在高维空间中寻找最近邻，通常使用Jaccard距离和Jaccard相似度来描述.</p>
+<h2 id="jaccard相似度-jaccard-similarity">Jaccard相似度 Jaccard Similarity</h2>
+<p>Jaccard相似度定义为两个集合的交集除以这两个集合的并集. <span class="math display">\[
+sim(A,B)=\dfrac{|A \cap B|}{|A \cup B|}
+\]</span></p>
+<h2 id="jaccard距离-jaccard-distance">Jaccard距离 Jaccard Distance</h2>
+<p>Jaccard距离满足非负性、对称性、三角不等式. <span class="math display">\[
+d(A,B)=1-\dfrac{|A \cap B|}{|A \cup B|}
+\]</span></p>
+<h1 id="文档相似性分析">文档相似性分析</h1>
+<p>目标：给定大量的文档，找到相似的文档.</p>
+<p><strong>应用</strong></p>
+<ul>
+<li>镜像网站或可能镜像的网站的检测</li>
+<li>新闻分析中发现相似性文章</li>
+</ul>
+<p><strong>存在的问题</strong></p>
+<ul>
+<li>相同内容的文章，但是内部文档片段的顺序可能不同</li>
+<li>需要比较的文档对太多</li>
+<li>文档太大或太多导致无法一次性加载进内存</li>
+</ul>
+<h2 id="lsh给出的解决方案">LSH给出的解决方案</h2>
+<p>LSH使得原始数据空间中两个相邻的数据点经过哈希后，在映射的数据空间中的位置仍然相近，反之则相反. 整个LSH过程可以分为两个阶段</p>
+<ul>
+<li>阶段一：离线建立索引
+<ul>
+<li>选择满足要求的哈希函数</li>
+<li>根据要求的准确率，确定哈希表个数和构建每个表的哈希函数个数</li>
+<li>通过哈希函数构建哈希表</li>
+</ul></li>
+<li>阶段二：在线查找
+<ul>
+<li>将要查询的数据经哈希函数映射到相应的bucket中</li>
+<li>计算要查询数据与bucket中数据的距离或相似度</li>
+</ul></li>
+</ul>
+<h2 id="哈希函数的选择要求">哈希函数的选择要求</h2>
+<p>令 d<sub>1</sub> 和 d<sub>2</sub> 是在某一距离度量 D 下的两个距离阈值，且 <span class="math inline">\(d_1 \lt d_2\)</span>，那么LSH采用的哈希函数要满足以下两个要求：</p>
+<ul>
+<li>如果<span class="math inline">\(D(\mathbf{x},\mathbf{y}) \leqslant d_1\)</span>，则<span class="math inline">\(h(x)=h(y)\)</span>的概率至少为 p<sub>1</sub>，即<span class="math inline">\(P(h(\mathbf{x})=h(\mathbf{y}))\geqslant p_1\)</span>;</li>
+<li>如果<span class="math inline">\(D(\mathbf{x},\mathbf{y})\geqslant d_2\)</span>，则<span class="math inline">\(h(x)=h(y)\)</span>的概率至多为 p<sub>2</sub>，即<span class="math inline">\(P(h(\mathbf{x})=h(\mathbf{y}))\leqslant p_2\)</span>.</li>
+</ul>
+<p><strong>常用距离度量</strong></p>
+<ul>
+<li>Jaccard距离度量</li>
+<li>Hamming距离度量</li>
+<li>Consine距离度量</li>
+<li>Normal Euclidean距离度量</li>
+</ul>
+<h2 id="lsh的三个核心步骤">LSH的三个核心步骤</h2>
+<p><img src="lsh.png" style="zoom: 33%;float: middle;" /></p>
+<ul>
+<li><strong>Shingling</strong>  将文本转化为集合，进而将集合转化为布尔向量</li>
+<li><strong>Minhashing</strong>  将布尔向量转化为数字签名，并且签名间保持原来文档间的相似度</li>
+<li><strong>Locality-Sensitive Hashing</strong>  筛选和寻找相似文档候选对</li>
+</ul>
+<h1 id="shingling">Shingling</h1>
+<p>Shingling的中文意思是“瓦片”，想象一下屋顶上的瓦片，总是上一片瓦片的尾部会盖在下一片瓦片的头部，对于一个文档集，以abcdef为例，假设3个字符表示为一个shingling，那么这个文档可以由abc，bcd，cde，def这四个“瓦片”组成，且前一个“瓦片”的尾部是后一个“瓦片”的头部.</p>
+<p><img src="shingling.webp" style="zoom: 70%;float: middle;" /></p>
+<p><img src="3-shingling.png" style="zoom:100%;float: middle;" /></p>
+<center>
+3-shingling
+</center>
+<p>Shingling是NLP中常用的衡量两个文档相似度的技术. 将一篇文档视为一个字符串，文档的 <strong>k-shingling(or k-gram)</strong> 定义为其中任意长度为 k 的子字符串. 假设一个文档D的内容是abcbc，则其2-shingling组成的包为S(D)={ab,bc,cb,bc}，去掉重复元素后即为文档D的2-shingling集合为S(D)={ab,bc,cb}.</p>
+<p>k 值的选取会对最终结果产生很大影响，k选取太小比如1，会导致文档中包含大量常用字，因此会得到很多Jaccard相似度很高的文档对；如果k太大，会导致每篇文档只有很少的k-shingling存在交集，使得几乎所有文档相似度都为0.</p>
+<p>得到k-shingling后可以通过Jaccard相似度对两片文档进行测量，但是由于每篇文档的k-shingling集合都非常大，因此会消耗很大的内存和计算时间. 此时，可以通过哈希函数将将文档集合表征为文档集的特征矩阵，其中矩阵的列对应于文档，行对应于k-shingling元素映射后的编号.</p>
+<p><img src="shingling.png" style="zoom: 50%;float: middle;" /></p>
+<p>其中每一列表示一个文档的数字签名Signature，可以通过比较文档的数字签名来判断两篇文档是否相似，数字签名相似的两片文档通常也是相似的. 到此为止，需要注意的两个问题是：</p>
+<ul>
+<li>尽管文档的数字签名相比于文档的k-shingling集合已经变小了，但可能对于实际计算来说也还是很大，因此可能会造成较大的内存开销和消耗较多的计算资源，所以我们需要之后的Minhashing和LSH来继续优化</li>
+<li>这种方法可能会同时带来False Positive 和False Negative</li>
+</ul>
+<h1 id="min-hashing">Min-hashing</h1>
+<p>对于经过Shingling之后得到的数字签名，我们需要继续通过Hash来减小其大小，因此，我们需要选取一个合适的哈希函数，以使得</p>
+<ul>
+<li>经过哈希之后的签名矩阵能够放在内存中</li>
+<li>sim(C<sub>1</sub>, C<sub>2</sub>) 和 sim(h(C<sub>1</sub>), h(C<sub>2</sub>))应该是几乎相等的</li>
+</ul>
+<p>显然，哈希函数的选取依赖于距离测量方法，不是所有的距离测量方法都能找到一个合适的哈希函数. 在这里我们采取Jaccrad距离测量方法，对于Jaccard距离测量，有一个适合它的Hash函数：Min-Hashing.</p>
+<p><strong>随机排列 Random Permutation</strong></p>
+<ul>
+<li>随机排列是对集合中元素顺序的随机排列</li>
+<li>洗牌就是一个很好的例子</li>
+</ul>
+<h2 id="定义">定义</h2>
+<p>假设布尔矩阵以随机排列 <span class="math inline">\(\pi\)</span> 进行排列，定义“哈希”函数 <span class="math inline">\(h_\pi =\)</span>列 C 在随机排列 $$ 下首次出现 1 的单元的下标 <span class="math display">\[
+h_\pi(C)=\min_{\pi} \pi(C)
+\]</span> 然后使用几个相互独立的哈希函数（也就是随机排列）生成一个列的签名.</p>
+<h2 id="实例">实例</h2>
+<p><img src="minhashing.png" style="zoom: 50%;float: middle;" /></p>
+<h2 id="min-hashing-属性">Min-Hashing 属性</h2>
+<p>给定一个随机排列 <span class="math inline">\(\pi\)</span>，我们有 <span class="math display">\[
+P(h_\pi(C_1) = h_\pi(C_2)) = sim(C_1,C_2)
+\]</span> <strong>Proof</strong></p>
+<p>定义 <span class="math inline">\(\pi(C_1)_k\)</span> 表示文档 C<sub>1</sub> 在随机排列 <span class="math inline">\(\pi\)</span> 下在下标为 k 处的单元首次取得1，定义 <span class="math inline">\(\pi(C_2)_k\)</span> 表示文档 C<sub>2</sub> 在随机排列 <span class="math inline">\(\pi\)</span> 下在下标 k 处的单元首次取得1. 对于文档C<sub>1</sub>和文档C<sub>2</sub>，其Min-Hashing对 <span class="math inline">\((\pi(C_1)_k),\pi(C_2)_k)\)</span> 共有四种可能，即(1,1)，(1,0)，(0,1)，(0,0)，分别记每种可能出现的次数为a，b，c，d，即 <span class="math display">\[
+\begin{align*}
+(\pi(C_1)_k),\pi(C_2)_k) = 
+\left\{
+\begin{array}{**lr**}
+(1,1) &amp; \text{a times} \\
+(1,0) &amp; \text{b times} \\
+(0,1) &amp; \text{c times} \\
+(0,0) &amp; \text{d times}
+\end{array}
+\right.
+\end{align*}
+\]</span> 那么，文档C<sub>1</sub>和C<sub>2</sub>的Jaccard相似度可以表示为 <span class="math display">\[
+sim(C_1,C_2) = \dfrac{a}{a+b+c}
+\]</span> 对于Min-Hashing，当 <span class="math inline">\(\pi(C_1)_k\)</span> 和 <span class="math inline">\(\pi(C_2)_k\)</span> 不都为1时会继续增加 k，直到为1，那么 <span class="math inline">\(h_\pi(C_1) = h_\pi(C_2)\)</span> 的情况就是二者同时为1，即<span class="math inline">\((\pi(C_1)_k),\pi(C_2)_k) =(1,1)\)</span> 的情况，这种情况的可能性为 <span class="math display">\[
+P(h_\pi(C_1) = h_\pi(C_2)) = \dfrac{a}{a+b+c}
+\]</span> 因此 <span class="math display">\[
+P(h_\pi(C_1) = h_\pi(C_2)) = sim(C_1,C_2)
+\]</span></p>
+<h2 id="减小签名矩阵大小">减小签名矩阵大小</h2>
+<p>假设一个文档的长度为 m，即需要 m bits来存储其布尔矩阵，那么对于单个 Min-Hashing 值，需要 <span class="math inline">\(\log_2 m\)</span> bits来存储，假设一个文档需要使用 k 个Min-Hashing函数，那么该文档经过Min-Hashing后的签名矩阵大小为 <span class="math inline">\(k \log_2 m\)</span>，那么文档大小变为了原来的 <span class="math display">\[
+\dfrac{k \log_2 m}{m}
+\]</span> 对于 m = 1 billion，k = 100，该值为 2.98×10<sup>-6</sup>，可以看到Min-Hashing明显地减小了文档签名矩阵长度，减少了内存消耗.</p>
+<p>虽然使用最小哈希签名矩阵明显减少了数据规模，但当哈希函数个数较少时会使得估算误差增大；哈希函数太多又会增加计算量. 因此，需要选择适当数量的哈希函数.</p>
+<h1 id="基于-min-hashing-的lsh-过程">基于 Min-Hashing 的LSH 过程</h1>
+<p>一旦得到一个最小哈希签名矩阵，可以运用条块化的方式实现LSH. 将签名矩阵划分为 b 个行条(band)，每个行条包括 r 行(raw). 对于每个行条，都存在一个哈希函数能够将一个行条中的一列数据（r 个整数向量）映射到一个桶中. 通常，对不同的行条采用不同的哈希函数，这样，即便是不同行条的同一列也大概率不会被映射到同一个桶中. 最终，任意两个集合只要至少一次被映射到同一个桶中，就被认为是一对<strong>候选相似组合</strong>.</p>
+<p><img src="lsh2.png" style="zoom:90%;float: middle;" /></p>
+<p>现在分析两个集合被映射到同一个桶中的概率与Jaccard 相似度 s 之间的关系：</p>
+<ul>
+<li><p>两个不同的min-hashing 签名相等的概率为 s</p></li>
+<li><p>在某个具体行条中，这对集合所有的最小哈希值都相等的概率为 s<sup>r</sup></p></li>
+<li><p>在某个具体行条中，这对集合至少有一对最小哈希值不相等的概率为 1-s<sup>r</sup></p></li>
+<li><p>在任何一个行条中，这对集合都至少有一对最小哈希值不相等的概率为 (1-s<sup>r</sup>)<sup>b</sup></p></li>
+<li><p>在整个签名矩阵中，这对集合至少有一个行条中任意一对最小哈希值都相等的概率为 1-(1-s<sup>r</sup>)<sup>b</sup></p></li>
+<li><p>因此，这对集合至少有一次被哈希到同一个桶中的概率为</p>
+<center>
+<p><b>1-(1-s<sup>r</sup>)<sup>b</sup></b></p>
+</center></li>
+</ul>
+<p><strong>例</strong></p>
+<p>假设文档C<sub>1</sub>和文档C<sub>2</sub>的相似度为0.8，且b=20，r=5，那么这两个集合至少有一次被哈希到同一个桶中的概率为 <span class="math display">\[
+1-(1-0.8^5)^{20} = 0.999644
+\]</span> 假设文档C<sub>1</sub>和文档C<sub>2</sub>的相似度为0.3，且b=20，r=5，那么这两个集合至少有一次被哈希到同一个桶中的概率为 <span class="math display">\[
+1-(1-0.3^5)^{20} = 0.047494
+\]</span> 可以看到相似度高的文档被哈希到一个桶中的概率也很高，相似度低的文档被哈希到同一个桶中的概率也比较低.</p>
+<p><img src="lsh r=5 b=10.png" style="zoom: 100%;float: middle;" /></p>
+<p>我们所需要做的事情就是不断地调整 b 和 r 以使得False Positive 和 False Negative 都比较小.</p>
+<h2 id="应用场景">应用场景</h2>
+<ul>
+<li>音频、图像检索：先对音频、图像构建LSH，依据LSH结果快速找到与之类似的其他对象</li>
+<li>聚类：以样本经过LSH的结果作为特征，并将LSH结果相同或相近的样本归为一类</li>
+<li>冗余检测：检测互联网中网页的相似度</li>
+</ul>
+<h2 id="不足">不足</h2>
+<p>LSH最然检索速度很快，但是算法的空间复杂度高. 因为想要达到较好的性能，需要建立多张哈希表.</p>
+<p>绘图代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> scipy.integrate <span class="keyword">as</span> sci</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> matplotlib</span><br><span class="line"><span class="keyword">from</span> matplotlib.patches <span class="keyword">import</span> Polygon</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">f</span>(<span class="params">x,r,b</span>):</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>-(<span class="number">1</span>-x**r)**b</span><br><span class="line"></span><br><span class="line">r = <span class="number">5</span></span><br><span class="line">b = <span class="number">10</span></span><br><span class="line">s = <span class="number">0.55</span></span><br><span class="line"></span><br><span class="line">x=np.linspace(<span class="number">0</span>,<span class="number">1</span>,<span class="number">1000</span>)</span><br><span class="line">y=f(x,r,b)</span><br><span class="line"></span><br><span class="line">fig,ax=plt.subplots(figsize=(<span class="number">7</span>,<span class="number">7</span>))</span><br><span class="line">plt.plot(x,y,<span class="string">&#x27;b&#x27;</span>,linewidth=<span class="number">3</span>,color=<span class="string">&#x27;gold&#x27;</span>)</span><br><span class="line">plt.ylim(ymin=<span class="number">0</span>,ymax=<span class="number">1</span>)</span><br><span class="line">plt.xlim(xmin=<span class="number">0</span>,xmax=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">Ix=np.linspace(<span class="number">0</span>,s,<span class="number">500</span>)</span><br><span class="line">Iy=f(Ix,r,b)</span><br><span class="line">verts=[(<span class="number">0</span>,<span class="number">0</span>)]+<span class="built_in">list</span>(<span class="built_in">zip</span>(Ix,Iy))+[(s,<span class="number">0</span>)]</span><br><span class="line">poly=Polygon(verts,alpha=<span class="number">0.3</span>,color=<span class="string">&quot;deepskyblue&quot;</span>)</span><br><span class="line">ax.add_patch(poly)</span><br><span class="line"></span><br><span class="line">Ix1=np.linspace(s,<span class="number">1</span>,<span class="number">500</span>)</span><br><span class="line">Iy1=f(Ix1,r,b)</span><br><span class="line">verts=[(s,<span class="number">1</span>)]+<span class="built_in">list</span>(<span class="built_in">zip</span>(Ix1,Iy1))+[(<span class="number">1</span>,<span class="number">1</span>)]</span><br><span class="line">poly=Polygon(verts,alpha=<span class="number">0.3</span>,color=<span class="string">&#x27;lime&#x27;</span>)</span><br><span class="line">ax.add_patch(poly)</span><br><span class="line"></span><br><span class="line">plt.grid()</span><br><span class="line">plt.savefig(<span class="string">&#x27;lsh.png&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Yuxin Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://yuxinli1.github.io/Locality-Sensitive-Hashing/" title="Locality Sensitive Hashing">https://yuxinli1.github.io/Locality-Sensitive-Hashing/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/hash/" rel="tag"># hash</a>
+              <a href="/tags/LSH/" rel="tag"># LSH</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Bloom-Filter/" rel="prev" title="Bloom Filter">
+      <i class="fa fa-chevron-left"></i> Bloom Filter
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Sampling/" rel="next" title="Sampling">
+      Sampling <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B7%9D%E7%A6%BB%E6%B5%8B%E9%87%8F"><span class="nav-number">1.</span> <span class="nav-text">距离测量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#jaccard%E7%9B%B8%E4%BC%BC%E5%BA%A6-jaccard-similarity"><span class="nav-number">1.1.</span> <span class="nav-text">Jaccard相似度 Jaccard Similarity</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jaccard%E8%B7%9D%E7%A6%BB-jaccard-distance"><span class="nav-number">1.2.</span> <span class="nav-text">Jaccard距离 Jaccard Distance</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%87%E6%A1%A3%E7%9B%B8%E4%BC%BC%E6%80%A7%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">文档相似性分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#lsh%E7%BB%99%E5%87%BA%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">2.1.</span> <span class="nav-text">LSH给出的解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0%E7%9A%84%E9%80%89%E6%8B%A9%E8%A6%81%E6%B1%82"><span class="nav-number">2.2.</span> <span class="nav-text">哈希函数的选择要求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#lsh%E7%9A%84%E4%B8%89%E4%B8%AA%E6%A0%B8%E5%BF%83%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.3.</span> <span class="nav-text">LSH的三个核心步骤</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#shingling"><span class="nav-number">3.</span> <span class="nav-text">Shingling</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#min-hashing"><span class="nav-number">4.</span> <span class="nav-text">Min-hashing</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">4.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number">4.2.</span> <span class="nav-text">实例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#min-hashing-%E5%B1%9E%E6%80%A7"><span class="nav-number">4.3.</span> <span class="nav-text">Min-Hashing 属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%8F%E5%B0%8F%E7%AD%BE%E5%90%8D%E7%9F%A9%E9%98%B5%E5%A4%A7%E5%B0%8F"><span class="nav-number">4.4.</span> <span class="nav-text">减小签名矩阵大小</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E-min-hashing-%E7%9A%84lsh-%E8%BF%87%E7%A8%8B"><span class="nav-number">5.</span> <span class="nav-text">基于 Min-Hashing 的LSH 过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">5.1.</span> <span class="nav-text">应用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E8%B6%B3"><span class="nav-number">5.2.</span> <span class="nav-text">不足</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yuxin Li"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Yuxin Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/YuxinLi1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;YuxinLi1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yxleezw@163.com" title="E-Mail → mailto:yxleezw@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuxin Li</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'e213ec0829f4e0d15e1e',
+      clientSecret: '5612bacf3b3c67a684b2103b4d03bc7fe5182a91',
+      repo        : 'blog_comments',
+      owner       : 'YuxinLI1',
+      admin       : ['YuxinLi1'],
+      id          : '72dc51b2108f07c61a23ccb3dce9c2ef',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <div style="width:100%;height:100%;position:fixed;top:0;z-index:-1;">
+  	<canvas id="canvas">
+  </div>
+  <script type="text/javascript" src="/js/bg_lines.js"></script>
+</body>
+</html>
