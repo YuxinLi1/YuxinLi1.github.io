@@ -1791,4 +1791,109 @@ f_a \leqslant \hat{f_a} \leqslant f_a + \epsilon ||f_{-a}||_1
         <tag>数字证书</tag>
       </tags>
   </entry>
+  <entry>
+    <title>比特币及UTXO模型</title>
+    <url>/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/</url>
+    <content><![CDATA[<h2 id="比特币"><a href="#比特币" class="headerlink" title="比特币"></a>比特币</h2><h3 id="什么是比特币？"><a href="#什么是比特币？" class="headerlink" title="什么是比特币？"></a>什么是比特币？</h3><p>比特币是建立在计算机科学、密码学和经济学的基础上并采用共识机制实现的一套去中心化的数字货币系统</p>
+<a id="more"></a>
+
+<h3 id="与传统货币的区别"><a href="#与传统货币的区别" class="headerlink" title="与传统货币的区别"></a>与传统货币的区别</h3><p><strong>传统货币：</strong></p>
+<ul>
+<li>由政府授权的银行、支付平台集中进行管理</li>
+<li>身份管理<ul>
+<li>在相应银行建立账户，包括个人信息、账户信息</li>
+</ul>
+</li>
+<li>服务<ul>
+<li>提供转账和支付服务</li>
+</ul>
+</li>
+<li>交易记录管理<ul>
+<li>跟踪账户交易记录并为第三方提供审计服务</li>
+</ul>
+</li>
+<li>信任<ul>
+<li>由政府进行授权许可</li>
+</ul>
+</li>
+</ul>
+<p><strong>比特币：</strong></p>
+<ul>
+<li>依托分布式网络，没有集中管理机构</li>
+<li>通过计算机科学、数学和密码学原理保证交易成功</li>
+<li>通过 POW （Proof of work）工作量证明共识机制对比特币的价格进行背书</li>
+<li>货币的发行通过比特币协议规定，总量固定，并且随着时间发行的数量递减</li>
+</ul>
+<h2 id="比特币身份管理"><a href="#比特币身份管理" class="headerlink" title="比特币身份管理"></a>比特币身份管理</h2><ul>
+<li>以<strong>地址形式存在的账户</strong>，该账户能够拥有、转出和转入比特币<ul>
+<li>比特币网络中的地址是一个 $2^{160}$ 的数字地址，可以确保任意两个账户不会重复</li>
+</ul>
+</li>
+<li>通过<strong>公钥</strong>和<strong>私钥</strong>标识一个唯一的身份<ul>
+<li>私钥随机生成</li>
+<li>公钥根据私钥生成</li>
+<li>公钥是交易方对外公布的地址，用于接受转入</li>
+<li>私钥用于支付</li>
+</ul>
+</li>
+</ul>
+<h3 id="钱包地址生成"><a href="#钱包地址生成" class="headerlink" title="钱包地址生成"></a>钱包地址生成</h3><img src="钱包地址生成.png" style="zoom:70%;" />
+
+<ul>
+<li>随机生成一个<strong>私钥</strong></li>
+<li>私钥经过 SECP265K1 算法（一种椭圆曲线算法）生成<strong>公钥</strong></li>
+<li>SHA256 和 RIPEMD160 都是一种 Hash 算法</li>
+<li>将地址<strong>版本号</strong> <code>0x00</code> 与经过 Hash 算法后得到的<strong>公钥哈希</strong>连在一起，对其进行两次 SHA256 运算，取结果的前4字节作为公钥哈希的<strong>校验值</strong>，连接在尾部</li>
+<li>将上一步结果使用 BASE58（比特币定制版本） 进行编码，得到<strong>钱包地址</strong>，如 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</li>
+</ul>
+<h3 id="公私钥关系"><a href="#公私钥关系" class="headerlink" title="公私钥关系"></a>公私钥关系</h3><img src="公私钥关系.png" style="zoom:90%;" />
+
+
+
+<h3 id="私钥签名"><a href="#私钥签名" class="headerlink" title="私钥签名"></a>私钥签名</h3><img src="私钥签名.png" style="zoom:80%;" />
+
+<blockquote>
+<p>该 “转出私钥” 是生成钱包地址中第一步生成的私钥还是临时生成的私钥？</p>
+<p>“转出公钥” 是否为生成钱包地址中的公钥？</p>
+</blockquote>
+<h3 id="公钥验签"><a href="#公钥验签" class="headerlink" title="公钥验签"></a>公钥验签</h3><img src="公钥验签.png" style="zoom:80%;" />
+
+<blockquote>
+<p>根据数字签名的原理，在签名算法处使用转出私钥对数据的摘要进行签名，验签时使用使用转出公钥解码转出签名并将得到的摘要与接收方收到的数据生成的摘要进行对比以验签。</p>
+</blockquote>
+<h2 id="UTXO"><a href="#UTXO" class="headerlink" title="UTXO"></a>UTXO</h2><p>UTXO 全称 Unspent Transaction Outputs，即<strong>未花费的交易输出</strong>。</p>
+<p>比特币实现安全可靠的转账服务，需要满足下列条件：</p>
+<ul>
+<li>身份证明</li>
+<li>足够的余额</li>
+<li>余额不被其他交易使用</li>
+</ul>
+<p>比特币网络中的每个账户都拥有一组 UTXOs，每个 UTXO 都是<strong>不可分割的</strong>，并且每个 UTXO <strong>有且仅有可能被 1 个交易花费 1 次</strong>。</p>
+<img src="UTXO.png" style="zoom:65%;" />
+
+
+
+<p><strong>UTXO小结</strong></p>
+<ul>
+<li>一个区块链有多个区块</li>
+<li>一个区块有多笔交易（两三千笔）</li>
+<li>每笔交易，多笔 Input，多笔 Output</li>
+<li>任何一笔 Transaction，会花费多个 UTXO(Input)，同时也产生多个 UTXO(Output)，属于多个不同的收款人</li>
+<li>1个UTXO = 1个 Transaction ID + Output Index</li>
+<li>旧的 UTXO 不断消亡，新的 UTXO 不断产生，所有的 UTXO 组成了 UTXO Set 的数据库，存在于每个节点</li>
+<li>任何一笔 UTXO，有且仅有可能被一个交易花费一次</li>
+</ul>
+<h2 id="比特币钱包"><a href="#比特币钱包" class="headerlink" title="比特币钱包"></a>比特币钱包</h2><ul>
+<li>某个人的钱包余额 = 属于他的 UTXO 的总和</li>
+<li>在比特币系统中，存的是一笔笔交易，也就是一笔笔的 UTXO，每个账户的余额是通过 UTXO 计算出来的，而不是直接存储余额</li>
+</ul>
+]]></content>
+      <categories>
+        <category>区块链</category>
+      </categories>
+      <tags>
+        <tag>比特币</tag>
+        <tag>区块链</tag>
+      </tags>
+  </entry>
 </search>

@@ -20,20 +20,27 @@
     var CONFIG = {"hostname":"yuxinli1.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="概述 马尔可夫不等式 Markov Inequality If X is any r.v., and \(0 \lt a \lt +\infty\), then \[ P(X \gt a) \leqslant \frac{E[X]}{a} \quad or \quad P(X \gt aE[x]) \leqslant \frac{1}{a} \]">
+  <meta name="description" content="比特币什么是比特币？比特币是建立在计算机科学、密码学和经济学的基础上并采用共识机制实现的一套去中心化的数字货币系统">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Tail Probability Inequality">
-<meta property="og:url" content="https://yuxinli1.github.io/Tail-Probability-Inequality/index.html">
+<meta property="og:title" content="比特币及UTXO模型">
+<meta property="og:url" content="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/index.html">
 <meta property="og:site_name" content="Yuxin&#39;s blog">
-<meta property="og:description" content="概述 马尔可夫不等式 Markov Inequality If X is any r.v., and \(0 \lt a \lt +\infty\), then \[ P(X \gt a) \leqslant \frac{E[X]}{a} \quad or \quad P(X \gt aE[x]) \leqslant \frac{1}{a} \]">
+<meta property="og:description" content="比特币什么是比特币？比特币是建立在计算机科学、密码学和经济学的基础上并采用共识机制实现的一套去中心化的数字货币系统">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-01-25T10:46:13.000Z">
-<meta property="article:modified_time" content="2021-01-25T11:10:40.737Z">
+<meta property="og:image" content="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/钱包地址生成.png">
+<meta property="og:image" content="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/公私钥关系.png">
+<meta property="og:image" content="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/私钥签名.png">
+<meta property="og:image" content="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/公钥验签.png">
+<meta property="og:image" content="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/UTXO.png">
+<meta property="article:published_time" content="2021-03-12T10:46:20.000Z">
+<meta property="article:modified_time" content="2021-03-12T13:18:04.608Z">
 <meta property="article:author" content="Yuxin Li">
-<meta property="article:tag" content="Algorithm">
+<meta property="article:tag" content="比特币">
+<meta property="article:tag" content="区块链">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/钱包地址生成.png">
 
-<link rel="canonical" href="https://yuxinli1.github.io/Tail-Probability-Inequality/">
+<link rel="canonical" href="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/">
 
 
 <script id="page-configurations">
@@ -46,7 +53,7 @@
   };
 </script>
 
-  <title>Tail Probability Inequality | Yuxin's blog</title>
+  <title>比特币及UTXO模型 | Yuxin's blog</title>
   
 
 
@@ -194,7 +201,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/Tail-Probability-Inequality/">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpeg">
@@ -207,7 +214,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Tail Probability Inequality
+          比特币及UTXO模型
         </h1>
 
         <div class="post-meta">
@@ -218,7 +225,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-01-25 18:46:13 / 修改时间：19:10:40" itemprop="dateCreated datePublished" datetime="2021-01-25T18:46:13+08:00">2021-01-25</time>
+              <time title="创建时间：2021-03-12 18:46:20 / 修改时间：21:18:04" itemprop="dateCreated datePublished" datetime="2021-03-12T18:46:20+08:00">2021-03-12</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -226,7 +233,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Algorithm/" itemprop="url" rel="index"><span itemprop="name">Algorithm</span></a>
+                  <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/" itemprop="url" rel="index"><span itemprop="name">区块链</span></a>
                 </span>
             </span>
 
@@ -241,121 +248,99 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="概述">概述</h1>
-<h2 id="马尔可夫不等式-markov-inequality">马尔可夫不等式 Markov Inequality</h2>
-<p>If X is any r.v., and <span class="math inline">\(0 \lt a \lt +\infty\)</span>, then <span class="math display">\[
-P(X \gt a) \leqslant \frac{E[X]}{a} \quad or \quad P(X \gt aE[x]) \leqslant \frac{1}{a}
-\]</span></p>
+        <h2 id="比特币"><a href="#比特币" class="headerlink" title="比特币"></a>比特币</h2><h3 id="什么是比特币？"><a href="#什么是比特币？" class="headerlink" title="什么是比特币？"></a>什么是比特币？</h3><p>比特币是建立在计算机科学、密码学和经济学的基础上并采用共识机制实现的一套去中心化的数字货币系统</p>
 <a id="more"></a>
-<h2 id="切比雪夫不等式-chebyshevs-inequality">切比雪夫不等式 Chebyshev's Inequality</h2>
-<p>If r.v.X has mean and variance <span class="math inline">\(\mu = E[x]\)</span> and <span class="math inline">\(\sigma^2 = E[(X-\mu)^2]\)</span>, then <span class="math display">\[
-P(|X-\mu| \gt a) \leqslant \frac{\sigma^2}{a^2} \quad or \quad P(|X-\mu| \gt aE[X]) \leqslant \frac{\sigma^2}{a^2E[x]^2}
-\]</span></p>
-<h2 id="切诺夫界-chernoff-bound">切诺夫界 Chernoff Bound</h2>
-<p>Let X<sub>i</sub> be a sequence of independent Bernoulli r.v.s with <span class="math inline">\(P(X_i = 1)=p_i\)</span> . Assume that r.v.<span class="math inline">\(X=\sum_{i=1}^{n} X_i\)</span> and <span class="math inline">\(\mu=\sum_{i=1}^{n}p_i\)</span>.</p>
-<p>Lower Bound: <span class="math display">\[
-\begin{aligned}
-&amp;P(X \lt (1-\delta)\mu) \lt \left( \dfrac{e^{- \delta}}{(1-\delta)^{1-\delta}} \right)^\mu \\
-&amp;P(X \lt (1-\delta)\mu) \lt e^{-\frac{\mu \delta^2}{2}}
-\end{aligned}
-\]</span></p>
-<p>Upper Bound: <span class="math display">\[
-\begin{aligned}
-&amp; P(X \gt (1+\delta)\mu) \lt \left( \dfrac{e^\delta}{(1+\delta)^{1+\delta}} \right)^\mu \\
-&amp; P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}}
-\end{aligned}
-\]</span></p>
-<h1 id="证明">证明</h1>
-<h2 id="markov-inequality">Markov Inequality</h2>
-<p><span class="math display">\[
-P(X \gt a) \leqslant \frac{E[X]}{a} \quad or \quad P(X \gt aE[x]) \leqslant \frac{1}{a}
-\]</span></p>
-<p>Proof: <span class="math display">\[
-\begin{align*}
-P(X \gt a) &amp;= \int_{X\gt a}p(x)dx \\
-&amp;= \int_a^\infty p(x)dx \\
-&amp;\leqslant \int_a^\infty \frac{x}{a}p(x)dx &amp; \text{since X $\gt$ a}\\
-&amp;= \frac{1}{a} \int_a^\infty xp(x)dx \\
-&amp;\leqslant \frac{1}{a}\int_0^\infty xp(x)dx \\
-&amp;= \frac{1}{a} \int_{-\infty}^\infty xp(x)dx &amp; \text{since X is non-negative r.v.}\\
-&amp;= \frac{E[X]}{a}
-\end{align*}
-\]</span></p>
-<h2 id="chebyshevs-inequality">Chebyshev's Inequality</h2>
-<p><span class="math display">\[
-P(|X-\mu| \gt a) \leqslant \frac{\sigma^2}{a^2} \quad or \quad P(|X-\mu| \gt aE[X]) \leqslant \frac{\sigma^2}{a^2E[x]^2}
-\]</span></p>
-<p>Proof:</p>
-<p>Let <span class="math inline">\(Y = |X- \mu|^2\)</span> in Markov's inequality, then <span class="math display">\[
-P(|X-\mu| \gt a) = P(Y \gt a^2) \leqslant \dfrac{E[Y]}{a^2} = \dfrac{\sigma^2}{a^2}
-\]</span></p>
-<h2 id="chernoff-bound">Chernoff Bound</h2>
-<h3 id="lower-bound">Lower Bound</h3>
-<p><span class="math display">\[
-\begin{aligned}
-&amp;P(X \lt (1-\delta)\mu) \lt \left( \dfrac{e^{- \delta}}{(1-\delta)^{1-\delta}} \right)^\mu \\
-&amp;P(X \lt (1-\delta)\mu) \lt e^{-\frac{\mu \delta^2}{2}}
-\end{aligned}
-\]</span></p>
-<p>Proof:</p>
-<p>For <span class="math inline">\(t \gt 0\)</span>, <span class="math display">\[
-\begin{aligned}
-P(X \lt (1-\delta)\mu) &amp;= P(e^{-tX} \gt e^{-t(1-\delta)\mu}) \\
-&amp;\leqslant \dfrac{E[e^{-tX}]}{e^{-t(1-\delta)\mu}} \\
-&amp;=\frac{\prod_{i=1}^{n} E[e^{-tX_i}]}{e^{-t(1-\delta)\mu}} \\
-\end{aligned}
-\]</span> since <span class="math inline">\(1-x \lt e^{-x}\)</span>, we have <span class="math display">\[
-E[e^{-tX_i}] = p_i e^{-t} + (1-p_i) = 1 - p_i(1-e^{-t}) &lt; exp(p_i(e^{-t}-1))
-\]</span></p>
-<p><span class="math display">\[
-\prod_{i=1}^n E[e^{-tX_i}] = \prod_{i=1}^{n} exp(p_i(e^{-t}-1)) = exp((e^{-t}-1)\sum_{i=1}^n p_i) = exp(\mu(e^{-t}-1)) = e^{\mu(e^{-t}-1)}
-\]</span></p>
-<p>Hence, <span class="math display">\[
-\begin{align*}
-P(X \lt (1-\delta)\mu) &amp;\lt \dfrac{e^{\mu(e^{-t}-1)}}{e^{-t(1-\delta)\mu}} \\
-&amp;= e^{\mu(e^{-t}-1)+t(1-\delta)\mu} \\
-&amp;= e^{\mu(e^{-t}-1+t(1-\delta))}
-\end{align*}
-\]</span> Taking the derivative of <span class="math inline">\(\mu(e^{-t}-1+t(1-\delta))\)</span> and setting <span class="math inline">\(-e^{-t}+1-\delta = 0\)</span>. We have <span class="math inline">\(t=ln \left( \dfrac{1}{1-\delta} \right)\)</span>. <span class="math display">\[
-P(X \lt (1-\delta)\mu) \lt \left( \dfrac{e^{-\delta}}{(1-\delta)^{(1-\delta)}} \right)^\mu
-\]</span></p>
-<p>To get the simpler form of the bound, we need to get rid of the clumsy term of <span class="math inline">\((1-\delta)^{(1-\delta)}\)</span>. <span class="math display">\[
-(1-\delta)ln(1-\delta) = (1-\delta)(\sum_{i=1}^{\infty} -\dfrac{\delta^i}{i}) \gt -\delta+\dfrac{\delta^2}{2} \\
-(1-\delta)^{(1-\delta)} \lt e^{-\delta+\frac{\delta^2}{2}}
-\]</span> Furthermore, <span class="math display">\[
-\begin{align*}
-P(X \lt (1-\delta)\mu) &amp;\lt \left( \dfrac{e^{-\delta}}{(1-\delta)^{(1-\delta)}} \right)^\mu \\
-&amp; \lt \left( \dfrac{e^{-\delta}}{e^{-\delta+\frac{\delta^2}{2}}} \right)^\mu \\
-&amp;= e^{\frac{-\mu \sigma^2}{2}}
-\end{align*}
-\]</span></p>
-<h3 id="upper-bound">Upper Bound</h3>
-<p><span class="math display">\[
-\begin{aligned}
-&amp; P(X \gt (1+\delta)\mu) \lt \left( \dfrac{e^\delta}{(1+\delta)^{1+\delta}} \right)^\mu \\
-&amp; P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}}
-\end{aligned}
-\]</span></p>
-<p>Proof <span class="math display">\[
-\begin{align*}
-P(X \gt (1+\delta)\mu) &amp;= P(e^{tX} \gt e^{t(1+\delta)\mu}) \\
-&amp;\lt \dfrac{E[e^{tX}]}{e^{t(1+\delta)\mu}} \\
-&amp;= \dfrac{\prod_{i=1}^n E[e^{tX_i}]}{e^{t(1+\delta)\mu}} \\
-&amp;= \dfrac{\prod_{i=1}^n (p_ie^t+(1-p_i))}{e^{t(1+\delta)\mu}} \\
-&amp;= \dfrac{\prod_{i=1}^n (1-p_i(1-e^t))}{e^{t(1+\delta)\mu}} \\
-&amp;\lt \dfrac{\prod_{i=1}^n e^{p_i(e^t-1)}}{e^{t(1+\delta)\mu}} \\
-&amp;= \dfrac{e^{\mu(e^t-1)}}{e^{t(1+\delta)\mu}} \\
-&amp;= e^{\mu(e^t-1-t(1+\delta)\mu)}
-\end{align*}
-\]</span> Let <span class="math inline">\((e^t-1-t(1+\delta)\mu)&#39;=0\)</span>, then we have <span class="math inline">\(t=ln(1+\delta)\)</span>. <span class="math display">\[
-P(X \gt (1+\delta)\mu) \lt \left( \dfrac{e^\delta}{(1+\delta)^{1+\delta}} \right)^\mu
-\]</span> Now, <span class="math display">\[
-(1+\delta)ln(1+\delta) \gt (1+\delta) \cdot \dfrac{2\delta}{2+\delta}
-\]</span> Furthermore, <span class="math display">\[
-P(X \gt (1+\delta)\mu) \lt \left( \dfrac{e^\delta}{(1+\delta)^{1+\delta}} \right)^\mu \lt e^{(\delta - (1+\delta)\cdot \frac{2\delta}{2+\delta})\mu}=e^{-\frac{\delta^2}{2+\delta}} \qquad \delta \geqslant 0
-\]</span> Hence, <span class="math display">\[
-P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}} \qquad 0 \leqslant \delta \leqslant 2
-\]</span></p>
+
+<h3 id="与传统货币的区别"><a href="#与传统货币的区别" class="headerlink" title="与传统货币的区别"></a>与传统货币的区别</h3><p><strong>传统货币：</strong></p>
+<ul>
+<li>由政府授权的银行、支付平台集中进行管理</li>
+<li>身份管理<ul>
+<li>在相应银行建立账户，包括个人信息、账户信息</li>
+</ul>
+</li>
+<li>服务<ul>
+<li>提供转账和支付服务</li>
+</ul>
+</li>
+<li>交易记录管理<ul>
+<li>跟踪账户交易记录并为第三方提供审计服务</li>
+</ul>
+</li>
+<li>信任<ul>
+<li>由政府进行授权许可</li>
+</ul>
+</li>
+</ul>
+<p><strong>比特币：</strong></p>
+<ul>
+<li>依托分布式网络，没有集中管理机构</li>
+<li>通过计算机科学、数学和密码学原理保证交易成功</li>
+<li>通过 POW （Proof of work）工作量证明共识机制对比特币的价格进行背书</li>
+<li>货币的发行通过比特币协议规定，总量固定，并且随着时间发行的数量递减</li>
+</ul>
+<h2 id="比特币身份管理"><a href="#比特币身份管理" class="headerlink" title="比特币身份管理"></a>比特币身份管理</h2><ul>
+<li>以<strong>地址形式存在的账户</strong>，该账户能够拥有、转出和转入比特币<ul>
+<li>比特币网络中的地址是一个 $2^{160}$ 的数字地址，可以确保任意两个账户不会重复</li>
+</ul>
+</li>
+<li>通过<strong>公钥</strong>和<strong>私钥</strong>标识一个唯一的身份<ul>
+<li>私钥随机生成</li>
+<li>公钥根据私钥生成</li>
+<li>公钥是交易方对外公布的地址，用于接受转入</li>
+<li>私钥用于支付</li>
+</ul>
+</li>
+</ul>
+<h3 id="钱包地址生成"><a href="#钱包地址生成" class="headerlink" title="钱包地址生成"></a>钱包地址生成</h3><img src="钱包地址生成.png" style="zoom:70%;" />
+
+<ul>
+<li>随机生成一个<strong>私钥</strong></li>
+<li>私钥经过 SECP265K1 算法（一种椭圆曲线算法）生成<strong>公钥</strong></li>
+<li>SHA256 和 RIPEMD160 都是一种 Hash 算法</li>
+<li>将地址<strong>版本号</strong> <code>0x00</code> 与经过 Hash 算法后得到的<strong>公钥哈希</strong>连在一起，对其进行两次 SHA256 运算，取结果的前4字节作为公钥哈希的<strong>校验值</strong>，连接在尾部</li>
+<li>将上一步结果使用 BASE58（比特币定制版本） 进行编码，得到<strong>钱包地址</strong>，如 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</li>
+</ul>
+<h3 id="公私钥关系"><a href="#公私钥关系" class="headerlink" title="公私钥关系"></a>公私钥关系</h3><img src="公私钥关系.png" style="zoom:90%;" />
+
+
+
+<h3 id="私钥签名"><a href="#私钥签名" class="headerlink" title="私钥签名"></a>私钥签名</h3><img src="私钥签名.png" style="zoom:80%;" />
+
+<blockquote>
+<p>该 “转出私钥” 是生成钱包地址中第一步生成的私钥还是临时生成的私钥？</p>
+<p>“转出公钥” 是否为生成钱包地址中的公钥？</p>
+</blockquote>
+<h3 id="公钥验签"><a href="#公钥验签" class="headerlink" title="公钥验签"></a>公钥验签</h3><img src="公钥验签.png" style="zoom:80%;" />
+
+<blockquote>
+<p>根据数字签名的原理，在签名算法处使用转出私钥对数据的摘要进行签名，验签时使用使用转出公钥解码转出签名并将得到的摘要与接收方收到的数据生成的摘要进行对比以验签。</p>
+</blockquote>
+<h2 id="UTXO"><a href="#UTXO" class="headerlink" title="UTXO"></a>UTXO</h2><p>UTXO 全称 Unspent Transaction Outputs，即<strong>未花费的交易输出</strong>。</p>
+<p>比特币实现安全可靠的转账服务，需要满足下列条件：</p>
+<ul>
+<li>身份证明</li>
+<li>足够的余额</li>
+<li>余额不被其他交易使用</li>
+</ul>
+<p>比特币网络中的每个账户都拥有一组 UTXOs，每个 UTXO 都是<strong>不可分割的</strong>，并且每个 UTXO <strong>有且仅有可能被 1 个交易花费 1 次</strong>。</p>
+<img src="UTXO.png" style="zoom:65%;" />
+
+
+
+<p><strong>UTXO小结</strong></p>
+<ul>
+<li>一个区块链有多个区块</li>
+<li>一个区块有多笔交易（两三千笔）</li>
+<li>每笔交易，多笔 Input，多笔 Output</li>
+<li>任何一笔 Transaction，会花费多个 UTXO(Input)，同时也产生多个 UTXO(Output)，属于多个不同的收款人</li>
+<li>1个UTXO = 1个 Transaction ID + Output Index</li>
+<li>旧的 UTXO 不断消亡，新的 UTXO 不断产生，所有的 UTXO 组成了 UTXO Set 的数据库，存在于每个节点</li>
+<li>任何一笔 UTXO，有且仅有可能被一个交易花费一次</li>
+</ul>
+<h2 id="比特币钱包"><a href="#比特币钱包" class="headerlink" title="比特币钱包"></a>比特币钱包</h2><ul>
+<li>某个人的钱包余额 = 属于他的 UTXO 的总和</li>
+<li>在比特币系统中，存的是一笔笔交易，也就是一笔笔的 UTXO，每个账户的余额是通过 UTXO 计算出来的，而不是直接存储余额</li>
+</ul>
 
     </div>
 
@@ -371,7 +356,7 @@ P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}} \qquad 0 \leqslant \delt
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://yuxinli1.github.io/Tail-Probability-Inequality/" title="Tail Probability Inequality">https://yuxinli1.github.io/Tail-Probability-Inequality/</a>
+    <a href="https://yuxinli1.github.io/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8F%8AUTXO%E6%A8%A1%E5%9E%8B/" title="比特币及UTXO模型">https://yuxinli1.github.io/比特币及UTXO模型/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -382,7 +367,8 @@ P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}} \qquad 0 \leqslant \delt
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/Algorithm/" rel="tag"># Algorithm</a>
+              <a href="/tags/%E6%AF%94%E7%89%B9%E5%B8%81/" rel="tag"># 比特币</a>
+              <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/" rel="tag"># 区块链</a>
           </div>
 
         
@@ -391,13 +377,10 @@ P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}} \qquad 0 \leqslant \delt
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/Github-Pages-Hexo-Next%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/" rel="prev" title="Github Pages + Hexo Next搭建个人博客">
-      <i class="fa fa-chevron-left"></i> Github Pages + Hexo Next搭建个人博客
+    <a href="/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/" rel="prev" title="加密、数字签名与数字证书">
+      <i class="fa fa-chevron-left"></i> 加密、数字签名与数字证书
     </a></div>
-      <div class="post-nav-item">
-    <a href="/Morris-Counting-Algorithm/" rel="next" title="Morris Counting Algorithm">
-      Morris Counting Algorithm <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -457,7 +440,7 @@ P(X \gt (1+\delta)\mu) \lt e^{-\frac{-\mu \delta^2}{4}} \qquad 0 \leqslant \delt
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E4%B8%8D%E7%AD%89%E5%BC%8F-markov-inequality"><span class="nav-number">1.1.</span> <span class="nav-text">马尔可夫不等式 Markov Inequality</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%87%E6%AF%94%E9%9B%AA%E5%A4%AB%E4%B8%8D%E7%AD%89%E5%BC%8F-chebyshevs-inequality"><span class="nav-number">1.2.</span> <span class="nav-text">切比雪夫不等式 Chebyshev&#39;s Inequality</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%87%E8%AF%BA%E5%A4%AB%E7%95%8C-chernoff-bound"><span class="nav-number">1.3.</span> <span class="nav-text">切诺夫界 Chernoff Bound</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%81%E6%98%8E"><span class="nav-number">2.</span> <span class="nav-text">证明</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#markov-inequality"><span class="nav-number">2.1.</span> <span class="nav-text">Markov Inequality</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#chebyshevs-inequality"><span class="nav-number">2.2.</span> <span class="nav-text">Chebyshev&#39;s Inequality</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#chernoff-bound"><span class="nav-number">2.3.</span> <span class="nav-text">Chernoff Bound</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#lower-bound"><span class="nav-number">2.3.1.</span> <span class="nav-text">Lower Bound</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#upper-bound"><span class="nav-number">2.3.2.</span> <span class="nav-text">Upper Bound</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AF%94%E7%89%B9%E5%B8%81"><span class="nav-number">1.</span> <span class="nav-text">比特币</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%AF%94%E7%89%B9%E5%B8%81%EF%BC%9F"><span class="nav-number">1.1.</span> <span class="nav-text">什么是比特币？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8E%E4%BC%A0%E7%BB%9F%E8%B4%A7%E5%B8%81%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">1.2.</span> <span class="nav-text">与传统货币的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AF%94%E7%89%B9%E5%B8%81%E8%BA%AB%E4%BB%BD%E7%AE%A1%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">比特币身份管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%92%B1%E5%8C%85%E5%9C%B0%E5%9D%80%E7%94%9F%E6%88%90"><span class="nav-number">2.1.</span> <span class="nav-text">钱包地址生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E7%A7%81%E9%92%A5%E5%85%B3%E7%B3%BB"><span class="nav-number">2.2.</span> <span class="nav-text">公私钥关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%81%E9%92%A5%E7%AD%BE%E5%90%8D"><span class="nav-number">2.3.</span> <span class="nav-text">私钥签名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E9%92%A5%E9%AA%8C%E7%AD%BE"><span class="nav-number">2.4.</span> <span class="nav-text">公钥验签</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UTXO"><span class="nav-number">3.</span> <span class="nav-text">UTXO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AF%94%E7%89%B9%E5%B8%81%E9%92%B1%E5%8C%85"><span class="nav-number">4.</span> <span class="nav-text">比特币钱包</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -654,7 +637,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'YuxinLi1.github.io',
       owner       : 'YuxinLI1',
       admin       : ['YuxinLi1'],
-      id          : '076d239117caa45d5d483617304e478c',
+      id          : '03b6ee20c05b663a5db7940494c46c40',
         language: 'zh-CN',
       distractionFreeMode: true
     });
