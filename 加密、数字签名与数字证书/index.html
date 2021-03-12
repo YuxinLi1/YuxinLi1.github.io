@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Noto Serif SC:300,300italic,400,400italic,700,700italic|Roboto Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yuxinli1.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="问题引入  非对称加密中，公私钥都可以加密，那么什么时候使用公钥加密，什么时候使用私钥呢？ 什么是数字签名，数字签名的作用是什么？ 为什么要对数据的摘要进行签名，而不是直接计算原始数据的数字签名？ 什么是数字证书，数字证书用来干什么？  加密  加密是通过使用某种算法将明文转变为不可读的密文，密文通过密钥还原出原来的明文，从而达到保护数据不被窃取泄漏的方法。  通常使用的数据编码算法有：AES、R">
+<meta property="og:type" content="article">
+<meta property="og:title" content="加密、数字签名与数字证书">
+<meta property="og:url" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/index.html">
+<meta property="og:site_name" content="Yuxin&#39;s blog">
+<meta property="og:description" content="问题引入  非对称加密中，公私钥都可以加密，那么什么时候使用公钥加密，什么时候使用私钥呢？ 什么是数字签名，数字签名的作用是什么？ 为什么要对数据的摘要进行签名，而不是直接计算原始数据的数字签名？ 什么是数字证书，数字证书用来干什么？  加密  加密是通过使用某种算法将明文转变为不可读的密文，密文通过密钥还原出原来的明文，从而达到保护数据不被窃取泄漏的方法。  通常使用的数据编码算法有：AES、R">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/明文传递1.jpeg">
+<meta property="og:image" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/明文传递2.jpeg">
+<meta property="og:image" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/对称加密.jpeg">
+<meta property="og:image" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/非对称加密.jpeg">
+<meta property="og:image" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/签名验签.jpeg">
+<meta property="og:image" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/签名验签2.jpeg">
+<meta property="og:image" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/签名验签3.jpeg">
+<meta property="og:image" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/自签名的根证书.png">
+<meta property="article:published_time" content="2021-03-12T06:24:33.000Z">
+<meta property="article:modified_time" content="2021-03-12T08:26:58.281Z">
+<meta property="article:author" content="Yuxin Li">
+<meta property="article:tag" content="非对称加密">
+<meta property="article:tag" content="数字签名">
+<meta property="article:tag" content="数字证书">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/明文传递1.jpeg">
+
+<link rel="canonical" href="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>加密、数字签名与数字证书 | Yuxin's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Yuxin's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          加密、数字签名与数字证书
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-03-12 14:24:33 / 修改时间：16:26:58" itemprop="dateCreated datePublished" datetime="2021-03-12T14:24:33+08:00">2021-03-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86/" itemprop="url" rel="index"><span itemprop="name">非对称加密</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="问题引入">问题引入</h2>
+<ol type="1">
+<li>非对称加密中，公私钥都可以加密，那么什么时候使用公钥加密，什么时候使用私钥呢？</li>
+<li>什么是数字签名，数字签名的作用是什么？</li>
+<li>为什么要对数据的摘要进行签名，而不是直接计算原始数据的数字签名？</li>
+<li>什么是数字证书，数字证书用来干什么？</li>
+</ol>
+<h2 id="加密">加密</h2>
+<blockquote>
+<p>加密是通过使用某种算法将明文转变为不可读的密文，密文通过密钥还原出原来的明文，从而达到保护数据不被窃取泄漏的方法。</p>
+</blockquote>
+<p>通常使用的数据编码算法有：AES、RSA、MD5、BASE64、SM4等。其中AES、RSA 和 SM4 是较为常用的加密算法。MD5 是一种有损压缩的算法，无论数据量有多大，都会生成一个固定128位的散列值，由于其具有不可逆性、单向恒定性，通常用于验证文件完整性、口令加密以及数字签名。BASE64 算法不需要使用密钥，任何人都可以使用该算法编码及解码数据，因此不用于数据加密中。</p>
+<a id="more"></a>
+<h2 id="对称加密">对称加密</h2>
+<p>如果通信双方使用明文进行交流，那么极易被第三方截取并篡改消息内容，因此通常需要将数据进行加密后进行传输。</p>
+<p><img src="明文传递1.jpeg" style="zoom:33%;" /></p>
+<p><img src="明文传递2.jpeg" style="zoom:33%;" /></p>
+<p>加密最简单也最易理解的方式便是对称加密，通信双方使用相同的密钥进行数据加密及解密。但是如果双方不能事先在线下约定好密钥，那么<strong>在传递密钥的的过程中因为需要使用明文传递</strong>，因此可能会被第三方截取并知悉密钥内容，所以并不是最安全的加密方式。</p>
+<p><img src="对称加密.jpeg" style="zoom:33%;" /></p>
+<h2 id="非对称加密">非对称加密</h2>
+<p>通信双方各生成一对<strong>公私钥</strong>，发信方使用收信方的公钥对内容进行加密，收信方使用自己的私钥即可解密。</p>
+<p>由于公钥是公开的，因此可以使用明文传递，自己只要保存好私钥即可。</p>
+<p><img src="非对称加密.jpeg" style="zoom:33%;" /></p>
+<p>但是，非对称加密仍然存在问题。以上图为例，如果 Eve 也使用 Alice 的公钥冒充 Bob 向 Alice 发送消息，由于 Alice 的公钥是公开的，任何人都可以获得，并且 Alice 没有办法确认到底是 Bob 发送的还是 Eve 发送的消息。</p>
+<h2 id="如何证明我是我数字签名">如何证明我是我—数字签名</h2>
+<p>在生活中，我们通过签字、指纹等方式来证实我们的身份，因为这些是我们独有的标志。因此，需要 Bob 有独有的标志，并且其他人能够验证这个标志——<strong>数字签名</strong>。</p>
+<p>那么对于 Bob 来说，有什么是他独有的么？Bob 的私钥！</p>
+<p>Bob 使用自己的私钥对邮件内容进行签名，Alice 收到信息后使用 Bob 的公钥进行<strong>验签</strong>，判断该签名是否来自于 Bob。</p>
+<p><img src="签名验签.jpeg" style="zoom:33%;" /></p>
+<p>那么，Eve 有可能篡改内容并伪造 Bob 的签名吗？不可能。内容一旦发生改变，签名也需要通过使用 Bob 的私钥重新计算，只要 Bob 保证自己的私钥不发生泄漏，Eve便不能够篡改内容。</p>
+<blockquote>
+<p>通常情况下，邮件内容会经过加密进行传输，而不是如上图般明文传输。进行签名时，一般不会直接采用正文进行签名，因为数字签名属于非对称加密，非对称加密依赖于复杂的数学运算，包括大数乘法、大数模等等，耗时比较久。同时，如果使用正文计算签名，也有可能会被第三方使用公钥得到正文内容。</p>
+<p>如果数据量大的时候计算数字签名将会比较耗时，所以一般做法是先将原数据进行 Hash 运算（比如使用 MD5），得到的 Hash 值就叫做「摘要」，然后再对摘要进行签名。</p>
+</blockquote>
+<p>「摘要」最好是不可逆转的，一般使用开头提到的 MD5 作为 Hash 函数，MD5 输出的结果固定位 128 位。</p>
+<blockquote>
+<p>为什么「摘要」最好是不可逆转的？</p>
+<p>因为既然 Alice 可以用 Bob 公钥解开签名，那么理论上其它人，比如 Eve 也可以使用 Bob 公钥解开签名拿到数据。</p>
+<p>所以我们最好对数据的「摘要」进行签名，这样，Eve 就算解开签名，拿到的也是「摘要」，如果摘要是不可逆转的，也就是无法从摘要反推出原文，也就达到了保密的作用。</p>
+</blockquote>
+<p>那么，<strong>接收方如何验证呢？</strong>以上图为例，Bob 使用 Alice 的公钥对数据进行加密，并使用 Hash 算法生成数据摘要，使用自己的私钥对摘要进行签名；Alice 收到信息后使用自己的私钥对数据进行解密，并使用相同的 Hash 算法生成摘要2，然后使用 Bob 的公钥从签名中提取出摘要1，对比摘要1和2判断内容是否被篡改。</p>
+<p><img src="签名验签2.jpeg" style="zoom:33%;" /></p>
+<p>数字签名是用于判断和防止数据被篡改的，并不是用于数据加密的。一般情况下，由于非对称加密运算复杂，耗时较长，所以通常首先使用非对称加密传递双方使用的对称加密的密钥，后续使用对称加密进行通信。</p>
+<h2 id="数字证书">数字证书</h2>
+<p>现在，Bob 和 Alice 可以依赖于对称加密进行保密通信，也可以依赖于数字签名验证对方的消息。<strong>但是，首要条件是 Alice 拿到的 Bob 的公钥的确是 Bob 的。</strong></p>
+<p>假如 Eve 冒充 Bob 将自己的公钥发送给 Alice，那么此后凡是 Bob 的消息都会验签失败，反而会被认为是伪造的，冒充的。</p>
+<p><img src="签名验签3.jpeg" style="zoom:33%;" /></p>
+<p>为什么 Eve 能够冒充 Bob 将自己的公钥发送给 Alice 呢？是因为 Bob 的公钥是直接通过网络发送给 Alice 的，在发送公钥的过程中没有做到<strong>防篡改、防冒充</strong>。那么如何实现防篡改防冒充呢？需要通过数字签名实现，而数字签名又需要对方持有发送者的公钥才能实现，似乎陷入了死循环......</p>
+<p>因此，我们需要一个第三方机构来证明 <strong>Bob 的公钥是 Bob 的公钥</strong>。为了解决该问题，引入了<strong>数字证书</strong>。</p>
+<p>数字证书，也就是<strong>公钥的数字签名</strong>。但是这个签名不能由我们来做，而是需要可信的第三方机构来证明，也就是<strong>证书颁布机构（CA）</strong>。CA 会将：证书的颁布机构、有效期、公钥、持有者(subject)等信息用 CA 的私钥进行签名。并且将签名结果和这些信息放在一起，这就叫做「数字证书」。</p>
+<p>然后，Bob 可以申请一个数字证书，将自己的数字证书发送给 Alice ，Alice 使用 CA 的公钥进行验签。因此，Alice 首先需要下载安装CA的证书。验签通过后可以证明这是 Bob 的公钥，便可以通过之前的讨论进行通信。</p>
+<p>那么 Eve 能否修改证书中的内容并重新计算一次签名呢？由于证书的签名是通过 CA 的私钥进行的，Eve 没有 CA 的私钥，因此无法对证书进行篡改和冒充。</p>
+<p>CA 是存在等级的，下级的 CA 需要上级的 CA 进行签名，因此一定存在根证书颁布机构。那么根证书颁布机构的证书是由谁签名的？答案是自签。这是信任链的基础。根证书的可靠性如何保证？根证书是由操作系统和浏览器厂商预安装好的。</p>
+<p>在 Ubuntu 中可到 <code>/etc/ssl/certs</code> 目录下查看。如下所示：</p>
+<p><img src="自签名的根证书.png" style="zoom:50%;" /></p>
+<h2 id="问题解答">问题解答</h2>
+<ol type="1">
+<li>非对称加密中，公私钥都可以加密，那么什么时候使用公钥加密，什么时候使用私钥呢？
+<ul>
+<li>加密场景下，希望别人都可以加密，但只有我能解密，即<strong>公钥加密，私钥解密</strong></li>
+<li>签名场景下，希望只有我能签名，但别人都可以验签，即<strong>私钥签名，公钥验签</strong></li>
+</ul></li>
+<li>什么是数字签名，数字签名的作用是什么？
+<ul>
+<li>数字签名是将数据的摘要通过私钥进行签名，并和加密后的数据一同发送</li>
+<li>防篡改，防冒充</li>
+</ul></li>
+<li>为什么要对数据的摘要进行签名，而不是直接计算原始数据的数字签名？
+<ul>
+<li>数据量可能比较多，使用非对称加密比较复杂，增加时耗，因此对数据的摘要进行签名</li>
+<li>同时也防止第三方拿到签名后使用公钥解出原始数据</li>
+</ul></li>
+<li>什么是数字证书，数字证书用来干什么？
+<ul>
+<li>数字证书是证书颁发机构使用自己的私钥对申请者的公钥进行签名认证</li>
+<li>解决公钥的安全分发问题，也奠定了信任链的基础</li>
+</ul></li>
+</ol>
+<blockquote>
+<p>References：https://segmentfault.com/a/1190000024523772</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Yuxin Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://yuxinli1.github.io/%E5%8A%A0%E5%AF%86%E3%80%81%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/" title="加密、数字签名与数字证书">https://yuxinli1.github.io/加密、数字签名与数字证书/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86/" rel="tag"># 非对称加密</a>
+              <a href="/tags/%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D/" rel="tag"># 数字签名</a>
+              <a href="/tags/%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6/" rel="tag"># 数字证书</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Random-Walk-and-PageRank/" rel="prev" title="Random Walk and PageRank">
+      <i class="fa fa-chevron-left"></i> Random Walk and PageRank
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E5%BC%95%E5%85%A5"><span class="nav-number">1.</span> <span class="nav-text">问题引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86"><span class="nav-number">2.</span> <span class="nav-text">加密</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86"><span class="nav-number">3.</span> <span class="nav-text">对称加密</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86"><span class="nav-number">4.</span> <span class="nav-text">非对称加密</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%AF%81%E6%98%8E%E6%88%91%E6%98%AF%E6%88%91%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="nav-number">5.</span> <span class="nav-text">如何证明我是我—数字签名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6"><span class="nav-number">6.</span> <span class="nav-text">数字证书</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E8%A7%A3%E7%AD%94"><span class="nav-number">7.</span> <span class="nav-text">问题解答</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yuxin Li"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Yuxin Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/YuxinLi1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;YuxinLi1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yxleezw@163.com" title="E-Mail → mailto:yxleezw@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuxin Li</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'e213ec0829f4e0d15e1e',
+      clientSecret: '5612bacf3b3c67a684b2103b4d03bc7fe5182a91',
+      repo        : 'YuxinLi1.github.io',
+      owner       : 'YuxinLI1',
+      admin       : ['YuxinLi1'],
+      id          : 'd9bab4d972c2598e72b6528721e442e1',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <div style="width:100%;height:100%;position:fixed;top:0;z-index:-1;">
+  	<canvas id="canvas">
+  </div>
+  <script type="text/javascript" src="/js/bg_lines.js"></script>
+</body>
+</html>
