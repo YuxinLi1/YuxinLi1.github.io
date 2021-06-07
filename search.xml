@@ -2068,9 +2068,97 @@ f_a \leqslant \hat{f_a} \leqslant f_a + \epsilon ||f_{-a}||_1
 </ul>
 <p>在此之前也写过爬虫，写过后端，写过前端，但是这是第一次使用 Node.js 写项目，而 Node.js 与之前所使用的编程语言有很明显的不同，最大的不同可能就是 Node.js 是基于异步的编程语言。因此，在开始之初的确很不适应这种编程风格（PS：即使现在也还是不适应），总是会得到一些莫名其妙的错误和行为。但是在项目开始之初总是想着怎样编写以抵抗这种异步的执行过程，导致的后果就是不仅没有抵抗成功，反而使得自己不爽快。于是，在走到一半左右的时候，开始慢慢去了解这种异步编程的思想，了解 Node.js 其特有的一些性质，比如 async、await 关键字的使用，比如回调函数callback 的使用方式，以及对于并发过程中的控制等，慢慢地了解到这些特性之后再去写代码就变得顺畅多了，之前无法顺利写下并获得正常结果的代码也可以成功执行了。所以说，还是要去拥抱编程思想，它也会反过来拥抱你！</p>
 ]]></content>
-      <tags>
-        <tag>Node.js</tag>
-        <tag>爬虫</tag>
-      </tags>
+  </entry>
+  <entry>
+    <title>使用Node.js爬取新闻并建立查询展示网站</title>
+    <url>/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/</url>
+    <content><![CDATA[<h2 id="一需求">一、需求</h2>
+<ul>
+<li>基于第一个项目爬虫爬取的数据，完成数据展示网站</li>
+<li>基本要求
+<ul>
+<li>用户注册登录，非注册登录用户不可查看</li>
+<li>用户注册、登录、查询数据入库</li>
+<li>查询结果支持分页以及排序（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#查询分析">第一次项目中已实现</a>）</li>
+<li>使用Echarts或者D3实现3个及以上分析图表（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#五查询分析与时间热度分析">第一次项目中已实现1个</a>）</li>
+<li>添加管理端界面，可以查看用户操作记录以及管理（冻结注销）用户</li>
+</ul></li>
+<li>扩展要求（非必须）
+<ul>
+<li>实现对爬取数据中文分词的查询（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#四数据存储与倒排索引创建">第一次项目中已实现</a>）</li>
+<li>实现查询结果按照主题词打分的排序（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#四数据存储与倒排索引创建">第一次项目中已实现</a>）</li>
+<li>用Elastic Search + Kibana 展示数据结果</li>
+</ul></li>
+</ul>
+<a id="more"></a>
+<h2 id="二需求分析">二、需求分析</h2>
+<p>由于需要实现用户的注册登录，因此我们需要新增一张表用于存储用户信息，且因为管理官可以冻结注销账户，因此表中需要一个属性表示用户当前状态，新建一张<code>user</code>表如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+---------+-------------+------+-----+---------+-------+</span><br><span class="line">| Field   | Type        | Null | Key | Default | Extra |</span><br><span class="line">+---------+-------------+------+-----+---------+-------+</span><br><span class="line">| account | varchar(30) | NO   | PRI | NULL    |       |</span><br><span class="line">| passwd  | varchar(30) | NO   |     | NULL    |       |</span><br><span class="line">| state   | tinyint(1)  | NO   |     | 1       |       |</span><br><span class="line">+---------+-------------+------+-----+---------+-------+</span><br></pre></td></tr></table></figure>
+<p>除此之外，我们要存储用户的查询记录，因此新建一张<code>history</code>表如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">+---------+-------------+------+-----+---------------------+-------------------+</span><br><span class="line">| Field   | Type        | Null | Key | Default             | Extra             |</span><br><span class="line">+---------+-------------+------+-----+---------------------+-------------------+</span><br><span class="line">| account | varchar(30) | NO   |     | NULL                |                   |</span><br><span class="line">| query   | text        | NO   |     | NULL                |                   |</span><br><span class="line">| time    | datetime    | NO   |     | cast(now() as date) | DEFAULT_GENERATED |</span><br><span class="line">+---------+-------------+------+-----+---------------------+-------------------+</span><br></pre></td></tr></table></figure>
+<p>除了新增数据库表之外，还需要新增<code>注册登录页</code>、<code>图表展示页</code>、<code>用户管理页</code>、<code>用户详情页</code>、<code>冻结页</code>五个页面。</p>
+<h2 id="三注册登录">三、注册登录</h2>
+<p>注册登录页如下：</p>
+<p><img src="login.gif" style="zoom:45%;" /></p>
+<p>注册登录功能前端使用<code>form</code>表单实现，通过<code>POST</code>方式提交数据，后端解析<code>POST</code>数据并从数据库中查询相关信息分析返回对应的页面：</p>
+<p><img src="注册登录.svg" style="zoom:70%;" /></p>
+<p>以下是后端部分代码：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">app.post(<span class="string">&#x27;/login&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> account = req.body.account;</span><br><span class="line">    <span class="keyword">var</span> passwd = req.body.passwd;</span><br><span class="line">    user.verify(account, passwd, <span class="function"><span class="keyword">function</span>(<span class="params">account, state, ver</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (ver) &#123; <span class="comment">// 帐号密码正确</span></span><br><span class="line">            res.cookie(<span class="string">&#x27;account&#x27;</span>, account); <span class="comment">// 设置cookie</span></span><br><span class="line">            res.cookie(<span class="string">&#x27;state&#x27;</span>, state); <span class="comment">// 设置cookie</span></span><br><span class="line">            <span class="keyword">if</span> (!state) &#123; <span class="comment">// 如果该帐号被冻结</span></span><br><span class="line">                res.redirect(<span class="string">&#x27;/blockpage&#x27;</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 如果是管理员帐号</span></span><br><span class="line">                <span class="keyword">if</span> (account.startsWith(<span class="string">&#x27;admin&#x27;</span>)) &#123;</span><br><span class="line">                    res.redirect(<span class="string">&#x27;/admin&#x27;</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123; <span class="comment">// 如果是普通账号</span></span><br><span class="line">                    res.redirect(<span class="string">&#x27;/index&#x27;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 帐号密码不正确</span></span><br><span class="line">            res.redirect(<span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">&#x27;/register&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> account = req.body.account;</span><br><span class="line">    <span class="keyword">var</span> passwd = req.body.passwd;</span><br><span class="line">    <span class="keyword">if</span> (user.register(account, passwd)) &#123;</span><br><span class="line">        res.cookie(<span class="string">&#x27;account&#x27;</span>, account);</span><br><span class="line">        res.cookie(<span class="string">&#x27;state&#x27;</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (account.startsWith(<span class="string">&#x27;admin&#x27;</span>)) &#123;</span><br><span class="line">            res.redirect(<span class="string">&#x27;/admin&#x27;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            res.redirect(<span class="string">&#x27;/index&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.redirect(<span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h2 id="四图表展示页">四、图表展示页</h2>
+<p>图表展示页中共实现了四张图表。第一个是实时热搜，通过分析<code>history</code>表中的数据得到搜索数量最多的四个关键词以及他们每小时内被搜索的次数通过使用Echarts绘制，结果如下：</p>
+<p><img src="1.gif" style="zoom:67%;" /></p>
+<p>第二张图使用Echarts中的旭日图展示热搜新闻的来源，以及每个来源的新闻中不同关键词被搜索的比例：</p>
+<p><img src="2.gif" style="zoom:67%;" /></p>
+<p>通过点击来源可以进一步查看每个来源的热搜关键词的比例。</p>
+<p>第三张和第四张图均是采用Echarts中的树状图分析新闻关键词热度和新闻标题的热度。新闻关键词可以直接统计词频得到，新闻标题首先进行分词后再统计词频得到：</p>
+<p><img src="3.gif" style="zoom:67%;" /></p>
+<h2 id="五用户管理页">五、用户管理页</h2>
+<p>用户管理页界面如下：</p>
+<p><img src="用户管理.png" style="zoom:67%;" /></p>
+<p>用户详情页界面如下：</p>
+<p><img src="用户详情.png" style="zoom:67%;" /></p>
+<p>这两个页面均为管理员帐号才能够进入，可以通过点击页面上的选项对用户进行管理：冻结帐号、取消冻结、注销、查看详情。这些动作均通过POST和Ajax实现：</p>
+<p>部分后端代码：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">app.get(<span class="string">&#x27;/admin&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> act = req.cookies.account;</span><br><span class="line">    <span class="keyword">if</span> (act) &#123;</span><br><span class="line">        <span class="keyword">if</span> (act.startsWith(<span class="string">&#x27;admin&#x27;</span>)) &#123;</span><br><span class="line">            query.query_users(<span class="function"><span class="keyword">function</span>(<span class="params">list</span>) </span>&#123;</span><br><span class="line">                res.render(<span class="string">&#x27;admin&#x27;</span>, &#123;</span><br><span class="line">                    <span class="string">&quot;users&quot;</span>: list</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            res.redirect(<span class="string">&#x27;/index&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.redirect(<span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">&#x27;/detail&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> account = req.query.account;</span><br><span class="line">    <span class="keyword">var</span> act = req.cookies.account;</span><br><span class="line">    <span class="keyword">if</span> (act) &#123;</span><br><span class="line">        <span class="keyword">if</span> (act.startsWith(<span class="string">&#x27;admin&#x27;</span>)) &#123;</span><br><span class="line">            query.query_detail(account, <span class="function"><span class="keyword">function</span>(<span class="params">dic</span>) </span>&#123;</span><br><span class="line">                <span class="comment">// console.log(dic);</span></span><br><span class="line">                res.render(<span class="string">&#x27;detail&#x27;</span>, dic);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            res.redirect(<span class="string">&#x27;/index&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.redirect(<span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">&#x27;/block&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> jsonStr = <span class="built_in">JSON</span>.parse(<span class="built_in">Object</span>.keys(req.body)[<span class="number">0</span>]);</span><br><span class="line">    user.block(jsonStr.account);</span><br><span class="line">    res.send(&#123;<span class="string">&quot;status&quot;</span>:<span class="number">200</span>&#125;)</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">&#x27;/unblock&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> jsonStr = <span class="built_in">JSON</span>.parse(<span class="built_in">Object</span>.keys(req.body)[<span class="number">0</span>]);</span><br><span class="line">    user.unblock(jsonStr.account);</span><br><span class="line">    res.send(&#123;<span class="string">&quot;status&quot;</span>:<span class="number">200</span>&#125;)</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">&#x27;/close&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> jsonStr = <span class="built_in">JSON</span>.parse(<span class="built_in">Object</span>.keys(req.body)[<span class="number">0</span>]);</span><br><span class="line">    user.close(jsonStr.account);</span><br><span class="line">    res.send(&#123;<span class="string">&quot;status&quot;</span>:<span class="number">200</span>&#125;)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>前端部分的js：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">$(<span class="string">&quot;.btn&quot;</span>).on(<span class="string">&quot;click&quot;</span>,<span class="function"><span class="keyword">function</span>(<span class="params">event</span>)</span>&#123;</span><br><span class="line">    event.preventDefault();</span><br><span class="line">    <span class="keyword">const</span> a = $(event.currentTarget);</span><br><span class="line">    <span class="keyword">var</span> body = &#123;&#125;;</span><br><span class="line">    body[<span class="string">&#x27;account&#x27;</span>] = a.attr(<span class="string">&quot;atr&quot;</span>);</span><br><span class="line">    $.ajax(&#123;</span><br><span class="line">        type: <span class="string">&quot;POST&quot;</span>,</span><br><span class="line">        datatype: <span class="string">&quot;json&quot;</span>,</span><br><span class="line">        url: a.attr(<span class="string">&quot;href&quot;</span>),</span><br><span class="line">        data: <span class="built_in">JSON</span>.stringify(body),</span><br><span class="line">        success: <span class="function"><span class="keyword">function</span>(<span class="params">result</span>)</span>&#123;</span><br><span class="line">            <span class="built_in">window</span>.location.href=<span class="string">&#x27;/admin&#x27;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>用户帐号若被冻结，在登录之后会进入冻结页而无法使用服务：</p>
+<p><img src="冻结.png" style="zoom:67%;" /></p>
+<h2 id="六总结">六、总结</h2>
+<p>通过此次项目，主要使用了Node.js中的<code>cookie-parser</code>和<code>body-parser</code>实现用户的注册登录以及用户管理等功能，前端还使用Echarts实现了五张图表用于分析实时热搜，热搜来源以及新闻的关键词热度分析和标题热度分析，还在查询结果页实现了查询词的时间热度分析，除此之外，用户的注册登录，用户管理处的冻结、取消冻结以及注销等均通过<code>POST</code>方式以及<code>Ajax</code>提交实现。整个项目后端加爬虫代码量约为950行，前端使用<code>ejs</code>模板渲染引擎，代码量约为550行，算是比较大的一个项目了！</p>
+<h2 id="七需求完成情况">七、需求完成情况</h2>
+<ul>
+<li>基本要求
+<ul class="task-list">
+<li><input type="checkbox" disabled="" checked="" />
+用户注册登录，非注册登录用户不可查看</li>
+<li><input type="checkbox" disabled="" checked="" />
+用户注册、登录、查询数据入库</li>
+<li><input type="checkbox" disabled="" checked="" />
+查询结果支持分页以及排序（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#查询分析">第一次项目中已实现</a>）<ul>
+<li>排序通过计算新闻关键词、标题分词以及摘要分词的idf加权得到新闻的rank进行排序</li>
+<li>通过在GET请求中添加page参数，从返回的排序后的结果中依次取前10条、次10条实现</li>
+</ul></li>
+<li><input type="checkbox" disabled="" checked="" />
+使用Echarts或者D3实现3个及以上分析图表（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#五查询分析与时间热度分析">第一次项目中实现1个</a>）（本次新增4个）</li>
+<li><input type="checkbox" disabled="" checked="" />
+添加管理端界面，可以查看用户操作记录以及管理（冻结注销）用户</li>
+</ul></li>
+<li>扩展要求
+<ul class="task-list">
+<li><input type="checkbox" disabled="" checked="" />
+实现对爬取数据中文分词的查询（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#四数据存储与倒排索引创建">第一次项目中已实现</a>）</li>
+<li><input type="checkbox" disabled="" checked="" />
+实现查询结果按照主题词打分的排序（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#四数据存储与倒排索引创建">第一次项目中已实现</a>）<ul>
+<li>排序通过计算新闻关键词、标题分词以及摘要分词的idf（inverse document frequency，逆向文件频率）加权得到新闻的rank进行排序</li>
+</ul></li>
+<li><input type="checkbox" disabled="" />
+用Elastic Search + Kibana 展示数据结果</li>
+</ul></li>
+</ul>
+<p>视频展示：</p>
+<video src="result.mp4" controls="controls" style="width: 100%; font-size: 1em;">
+</video>
+]]></content>
   </entry>
 </search>

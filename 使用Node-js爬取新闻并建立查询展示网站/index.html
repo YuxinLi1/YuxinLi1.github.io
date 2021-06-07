@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.loli.net/css?family=Noto Serif SC:300,300italic,400,400italic,700,700italic|Roboto Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yuxinli1.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、需求  基于第一个项目爬虫爬取的数据，完成数据展示网站 基本要求  用户注册登录，非注册登录用户不可查看 用户注册、登录、查询数据入库 查询结果支持分页以及排序（第一次项目中已实现） 使用Echarts或者D3实现3个及以上分析图表（第一次项目中已实现1个） 添加管理端界面，可以查看用户操作记录以及管理（冻结注销）用户  扩展要求（非必须）  实现对爬取数据中文分词的查询（第一次项目中已实现）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Node.js爬取新闻并建立查询展示网站">
+<meta property="og:url" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/index.html">
+<meta property="og:site_name" content="Yuxin&#39;s blog">
+<meta property="og:description" content="一、需求  基于第一个项目爬虫爬取的数据，完成数据展示网站 基本要求  用户注册登录，非注册登录用户不可查看 用户注册、登录、查询数据入库 查询结果支持分页以及排序（第一次项目中已实现） 使用Echarts或者D3实现3个及以上分析图表（第一次项目中已实现1个） 添加管理端界面，可以查看用户操作记录以及管理（冻结注销）用户  扩展要求（非必须）  实现对爬取数据中文分词的查询（第一次项目中已实现）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/login.gif">
+<meta property="og:image" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/注册登录.svg">
+<meta property="og:image" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/1.gif">
+<meta property="og:image" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/2.gif">
+<meta property="og:image" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/3.gif">
+<meta property="og:image" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/用户管理.png">
+<meta property="og:image" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/用户详情.png">
+<meta property="og:image" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/冻结.png">
+<meta property="article:published_time" content="2021-06-07T02:12:10.000Z">
+<meta property="article:modified_time" content="2021-06-07T02:16:27.407Z">
+<meta property="article:author" content="Yuxin Li">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/login.gif">
+
+<link rel="canonical" href="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>使用Node.js爬取新闻并建立查询展示网站 | Yuxin's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Yuxin's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="Yuxin Li">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yuxin's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用Node.js爬取新闻并建立查询展示网站
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-06-07 10:12:10 / 修改时间：10:16:27" itemprop="dateCreated datePublished" datetime="2021-06-07T10:12:10+08:00">2021-06-07</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一需求">一、需求</h2>
+<ul>
+<li>基于第一个项目爬虫爬取的数据，完成数据展示网站</li>
+<li>基本要求
+<ul>
+<li>用户注册登录，非注册登录用户不可查看</li>
+<li>用户注册、登录、查询数据入库</li>
+<li>查询结果支持分页以及排序（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#查询分析">第一次项目中已实现</a>）</li>
+<li>使用Echarts或者D3实现3个及以上分析图表（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#五查询分析与时间热度分析">第一次项目中已实现1个</a>）</li>
+<li>添加管理端界面，可以查看用户操作记录以及管理（冻结注销）用户</li>
+</ul></li>
+<li>扩展要求（非必须）
+<ul>
+<li>实现对爬取数据中文分词的查询（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#四数据存储与倒排索引创建">第一次项目中已实现</a>）</li>
+<li>实现查询结果按照主题词打分的排序（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#四数据存储与倒排索引创建">第一次项目中已实现</a>）</li>
+<li>用Elastic Search + Kibana 展示数据结果</li>
+</ul></li>
+</ul>
+<a id="more"></a>
+<h2 id="二需求分析">二、需求分析</h2>
+<p>由于需要实现用户的注册登录，因此我们需要新增一张表用于存储用户信息，且因为管理官可以冻结注销账户，因此表中需要一个属性表示用户当前状态，新建一张<code>user</code>表如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">+---------+-------------+------+-----+---------+-------+</span><br><span class="line">| Field   | Type        | Null | Key | Default | Extra |</span><br><span class="line">+---------+-------------+------+-----+---------+-------+</span><br><span class="line">| account | varchar(30) | NO   | PRI | NULL    |       |</span><br><span class="line">| passwd  | varchar(30) | NO   |     | NULL    |       |</span><br><span class="line">| state   | tinyint(1)  | NO   |     | 1       |       |</span><br><span class="line">+---------+-------------+------+-----+---------+-------+</span><br></pre></td></tr></table></figure>
+<p>除此之外，我们要存储用户的查询记录，因此新建一张<code>history</code>表如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">+---------+-------------+------+-----+---------------------+-------------------+</span><br><span class="line">| Field   | Type        | Null | Key | Default             | Extra             |</span><br><span class="line">+---------+-------------+------+-----+---------------------+-------------------+</span><br><span class="line">| account | varchar(30) | NO   |     | NULL                |                   |</span><br><span class="line">| query   | text        | NO   |     | NULL                |                   |</span><br><span class="line">| time    | datetime    | NO   |     | cast(now() as date) | DEFAULT_GENERATED |</span><br><span class="line">+---------+-------------+------+-----+---------------------+-------------------+</span><br></pre></td></tr></table></figure>
+<p>除了新增数据库表之外，还需要新增<code>注册登录页</code>、<code>图表展示页</code>、<code>用户管理页</code>、<code>用户详情页</code>、<code>冻结页</code>五个页面。</p>
+<h2 id="三注册登录">三、注册登录</h2>
+<p>注册登录页如下：</p>
+<p><img src="login.gif" style="zoom:45%;" /></p>
+<p>注册登录功能前端使用<code>form</code>表单实现，通过<code>POST</code>方式提交数据，后端解析<code>POST</code>数据并从数据库中查询相关信息分析返回对应的页面：</p>
+<p><img src="注册登录.svg" style="zoom:70%;" /></p>
+<p>以下是后端部分代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">app.post(<span class="string">&#x27;/login&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> account = req.body.account;</span><br><span class="line">    <span class="keyword">var</span> passwd = req.body.passwd;</span><br><span class="line">    user.verify(account, passwd, <span class="function"><span class="keyword">function</span>(<span class="params">account, state, ver</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (ver) &#123; <span class="comment">// 帐号密码正确</span></span><br><span class="line">            res.cookie(<span class="string">&#x27;account&#x27;</span>, account); <span class="comment">// 设置cookie</span></span><br><span class="line">            res.cookie(<span class="string">&#x27;state&#x27;</span>, state); <span class="comment">// 设置cookie</span></span><br><span class="line">            <span class="keyword">if</span> (!state) &#123; <span class="comment">// 如果该帐号被冻结</span></span><br><span class="line">                res.redirect(<span class="string">&#x27;/blockpage&#x27;</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 如果是管理员帐号</span></span><br><span class="line">                <span class="keyword">if</span> (account.startsWith(<span class="string">&#x27;admin&#x27;</span>)) &#123;</span><br><span class="line">                    res.redirect(<span class="string">&#x27;/admin&#x27;</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123; <span class="comment">// 如果是普通账号</span></span><br><span class="line">                    res.redirect(<span class="string">&#x27;/index&#x27;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 帐号密码不正确</span></span><br><span class="line">            res.redirect(<span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">&#x27;/register&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> account = req.body.account;</span><br><span class="line">    <span class="keyword">var</span> passwd = req.body.passwd;</span><br><span class="line">    <span class="keyword">if</span> (user.register(account, passwd)) &#123;</span><br><span class="line">        res.cookie(<span class="string">&#x27;account&#x27;</span>, account);</span><br><span class="line">        res.cookie(<span class="string">&#x27;state&#x27;</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (account.startsWith(<span class="string">&#x27;admin&#x27;</span>)) &#123;</span><br><span class="line">            res.redirect(<span class="string">&#x27;/admin&#x27;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            res.redirect(<span class="string">&#x27;/index&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.redirect(<span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h2 id="四图表展示页">四、图表展示页</h2>
+<p>图表展示页中共实现了四张图表。第一个是实时热搜，通过分析<code>history</code>表中的数据得到搜索数量最多的四个关键词以及他们每小时内被搜索的次数通过使用Echarts绘制，结果如下：</p>
+<p><img src="1.gif" style="zoom:67%;" /></p>
+<p>第二张图使用Echarts中的旭日图展示热搜新闻的来源，以及每个来源的新闻中不同关键词被搜索的比例：</p>
+<p><img src="2.gif" style="zoom:67%;" /></p>
+<p>通过点击来源可以进一步查看每个来源的热搜关键词的比例。</p>
+<p>第三张和第四张图均是采用Echarts中的树状图分析新闻关键词热度和新闻标题的热度。新闻关键词可以直接统计词频得到，新闻标题首先进行分词后再统计词频得到：</p>
+<p><img src="3.gif" style="zoom:67%;" /></p>
+<h2 id="五用户管理页">五、用户管理页</h2>
+<p>用户管理页界面如下：</p>
+<p><img src="用户管理.png" style="zoom:67%;" /></p>
+<p>用户详情页界面如下：</p>
+<p><img src="用户详情.png" style="zoom:67%;" /></p>
+<p>这两个页面均为管理员帐号才能够进入，可以通过点击页面上的选项对用户进行管理：冻结帐号、取消冻结、注销、查看详情。这些动作均通过POST和Ajax实现：</p>
+<p>部分后端代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">app.get(<span class="string">&#x27;/admin&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> act = req.cookies.account;</span><br><span class="line">    <span class="keyword">if</span> (act) &#123;</span><br><span class="line">        <span class="keyword">if</span> (act.startsWith(<span class="string">&#x27;admin&#x27;</span>)) &#123;</span><br><span class="line">            query.query_users(<span class="function"><span class="keyword">function</span>(<span class="params">list</span>) </span>&#123;</span><br><span class="line">                res.render(<span class="string">&#x27;admin&#x27;</span>, &#123;</span><br><span class="line">                    <span class="string">&quot;users&quot;</span>: list</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            res.redirect(<span class="string">&#x27;/index&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.redirect(<span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">&#x27;/detail&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> account = req.query.account;</span><br><span class="line">    <span class="keyword">var</span> act = req.cookies.account;</span><br><span class="line">    <span class="keyword">if</span> (act) &#123;</span><br><span class="line">        <span class="keyword">if</span> (act.startsWith(<span class="string">&#x27;admin&#x27;</span>)) &#123;</span><br><span class="line">            query.query_detail(account, <span class="function"><span class="keyword">function</span>(<span class="params">dic</span>) </span>&#123;</span><br><span class="line">                <span class="comment">// console.log(dic);</span></span><br><span class="line">                res.render(<span class="string">&#x27;detail&#x27;</span>, dic);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            res.redirect(<span class="string">&#x27;/index&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.redirect(<span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">&#x27;/block&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> jsonStr = <span class="built_in">JSON</span>.parse(<span class="built_in">Object</span>.keys(req.body)[<span class="number">0</span>]);</span><br><span class="line">    user.block(jsonStr.account);</span><br><span class="line">    res.send(&#123;<span class="string">&quot;status&quot;</span>:<span class="number">200</span>&#125;)</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">&#x27;/unblock&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> jsonStr = <span class="built_in">JSON</span>.parse(<span class="built_in">Object</span>.keys(req.body)[<span class="number">0</span>]);</span><br><span class="line">    user.unblock(jsonStr.account);</span><br><span class="line">    res.send(&#123;<span class="string">&quot;status&quot;</span>:<span class="number">200</span>&#125;)</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.post(<span class="string">&#x27;/close&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> jsonStr = <span class="built_in">JSON</span>.parse(<span class="built_in">Object</span>.keys(req.body)[<span class="number">0</span>]);</span><br><span class="line">    user.close(jsonStr.account);</span><br><span class="line">    res.send(&#123;<span class="string">&quot;status&quot;</span>:<span class="number">200</span>&#125;)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>前端部分的js：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">&quot;.btn&quot;</span>).on(<span class="string">&quot;click&quot;</span>,<span class="function"><span class="keyword">function</span>(<span class="params">event</span>)</span>&#123;</span><br><span class="line">    event.preventDefault();</span><br><span class="line">    <span class="keyword">const</span> a = $(event.currentTarget);</span><br><span class="line">    <span class="keyword">var</span> body = &#123;&#125;;</span><br><span class="line">    body[<span class="string">&#x27;account&#x27;</span>] = a.attr(<span class="string">&quot;atr&quot;</span>);</span><br><span class="line">    $.ajax(&#123;</span><br><span class="line">        type: <span class="string">&quot;POST&quot;</span>,</span><br><span class="line">        datatype: <span class="string">&quot;json&quot;</span>,</span><br><span class="line">        url: a.attr(<span class="string">&quot;href&quot;</span>),</span><br><span class="line">        data: <span class="built_in">JSON</span>.stringify(body),</span><br><span class="line">        success: <span class="function"><span class="keyword">function</span>(<span class="params">result</span>)</span>&#123;</span><br><span class="line">            <span class="built_in">window</span>.location.href=<span class="string">&#x27;/admin&#x27;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>用户帐号若被冻结，在登录之后会进入冻结页而无法使用服务：</p>
+<p><img src="冻结.png" style="zoom:67%;" /></p>
+<h2 id="六总结">六、总结</h2>
+<p>通过此次项目，主要使用了Node.js中的<code>cookie-parser</code>和<code>body-parser</code>实现用户的注册登录以及用户管理等功能，前端还使用Echarts实现了五张图表用于分析实时热搜，热搜来源以及新闻的关键词热度分析和标题热度分析，还在查询结果页实现了查询词的时间热度分析，除此之外，用户的注册登录，用户管理处的冻结、取消冻结以及注销等均通过<code>POST</code>方式以及<code>Ajax</code>提交实现。整个项目后端加爬虫代码量约为950行，前端使用<code>ejs</code>模板渲染引擎，代码量约为550行，算是比较大的一个项目了！</p>
+<h2 id="七需求完成情况">七、需求完成情况</h2>
+<ul>
+<li>基本要求
+<ul class="task-list">
+<li><input type="checkbox" disabled="" checked="" />
+用户注册登录，非注册登录用户不可查看</li>
+<li><input type="checkbox" disabled="" checked="" />
+用户注册、登录、查询数据入库</li>
+<li><input type="checkbox" disabled="" checked="" />
+查询结果支持分页以及排序（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#查询分析">第一次项目中已实现</a>）<ul>
+<li>排序通过计算新闻关键词、标题分词以及摘要分词的idf加权得到新闻的rank进行排序</li>
+<li>通过在GET请求中添加page参数，从返回的排序后的结果中依次取前10条、次10条实现</li>
+</ul></li>
+<li><input type="checkbox" disabled="" checked="" />
+使用Echarts或者D3实现3个及以上分析图表（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#五查询分析与时间热度分析">第一次项目中实现1个</a>）（本次新增4个）</li>
+<li><input type="checkbox" disabled="" checked="" />
+添加管理端界面，可以查看用户操作记录以及管理（冻结注销）用户</li>
+</ul></li>
+<li>扩展要求
+<ul class="task-list">
+<li><input type="checkbox" disabled="" checked="" />
+实现对爬取数据中文分词的查询（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#四数据存储与倒排索引创建">第一次项目中已实现</a>）</li>
+<li><input type="checkbox" disabled="" checked="" />
+实现查询结果按照主题词打分的排序（<a href="https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询网站/#四数据存储与倒排索引创建">第一次项目中已实现</a>）<ul>
+<li>排序通过计算新闻关键词、标题分词以及摘要分词的idf（inverse document frequency，逆向文件频率）加权得到新闻的rank进行排序</li>
+</ul></li>
+<li><input type="checkbox" disabled="" />
+用Elastic Search + Kibana 展示数据结果</li>
+</ul></li>
+</ul>
+<p>视频展示：</p>
+<video src="result.mp4" controls="controls" style="width: 100%; font-size: 1em;">
+</video>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Yuxin Li
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://yuxinli1.github.io/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E5%B1%95%E7%A4%BA%E7%BD%91%E7%AB%99/" title="使用Node.js爬取新闻并建立查询展示网站">https://yuxinli1.github.io/使用Node-js爬取新闻并建立查询展示网站/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/%E4%BD%BF%E7%94%A8Node-js%E7%88%AC%E5%8F%96%E6%96%B0%E9%97%BB%E5%B9%B6%E5%BB%BA%E7%AB%8B%E6%9F%A5%E8%AF%A2%E7%BD%91%E7%AB%99/" rel="prev" title="使用Node.js爬取新闻并建立查询网站">
+      <i class="fa fa-chevron-left"></i> 使用Node.js爬取新闻并建立查询网站
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E9%9C%80%E6%B1%82"><span class="nav-number">1.</span> <span class="nav-text">一、需求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">二、需求分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E6%B3%A8%E5%86%8C%E7%99%BB%E5%BD%95"><span class="nav-number">3.</span> <span class="nav-text">三、注册登录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E5%9B%BE%E8%A1%A8%E5%B1%95%E7%A4%BA%E9%A1%B5"><span class="nav-number">4.</span> <span class="nav-text">四、图表展示页</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86%E9%A1%B5"><span class="nav-number">5.</span> <span class="nav-text">五、用户管理页</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">六、总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E9%9C%80%E6%B1%82%E5%AE%8C%E6%88%90%E6%83%85%E5%86%B5"><span class="nav-number">7.</span> <span class="nav-text">七、需求完成情况</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yuxin Li"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">Yuxin Li</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/YuxinLi1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;YuxinLi1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:yxleezw@163.com" title="E-Mail → mailto:yxleezw@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/ch-ZH" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yuxin Li</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'e213ec0829f4e0d15e1e',
+      clientSecret: '5612bacf3b3c67a684b2103b4d03bc7fe5182a91',
+      repo        : 'YuxinLi1.github.io',
+      owner       : 'YuxinLI1',
+      admin       : ['YuxinLi1'],
+      id          : '89942e97afdd3a425a7169cd0c926f92',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  <div style="width:100%;height:100%;position:fixed;top:0;z-index:-1;">
+  	<canvas id="canvas">
+  </div>
+  <script type="text/javascript" src="/js/bg_lines.js"></script>
+</body>
+</html>
